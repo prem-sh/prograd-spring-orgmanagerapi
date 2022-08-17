@@ -19,7 +19,7 @@ public interface DepartmentRepo  extends JpaRepository<Department, Long>{
     @Query("select (count(d) > 0) from Department d where d.organization.id = ?1 and d.id = ?2 and d.isDeleted = false")
     boolean existsById(long id, long id1);
 
-    @Query("select d from Department d where d.organization.id = ?1 and d.departmentName like ?2 and d.isDeleted = false")
+    @Query("select d from Department d where d.organization.id = ?1 and d.departmentName like concat('%', ?2,'%') and d.isDeleted = false")
     List<Department> filter(long id, String departmentName);
     
 }

@@ -66,6 +66,7 @@ public class AssetServiceImpl implements AssetService{
 
     @Override
     public ResponseEntity<UpdatedDto> updateAsset(Long orgId, UpdateAssetDto dto, Long id) {
+        if (!assetsRepo.existsById(orgId, id)) throw new EntityNotFoundException("Asset not found");
         Asset a = assetsRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Asset not found"));
         if(dto.getName()!=null) a.setName(dto.getName());
         if(dto.getCount()!=null) a.setCount(dto.getCount());
@@ -78,6 +79,7 @@ public class AssetServiceImpl implements AssetService{
 
     @Override
     public ResponseEntity<DeletedDto> deleteAsset(Long orgId, Long id) {
+        if (!assetsRepo.existsById(orgId, id)) throw new EntityNotFoundException("Asset not found");
         Asset a = assetsRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Asset not found"));
         a.setIsDeleted(true);
         a.setDeletedBy(principalService.getUser());

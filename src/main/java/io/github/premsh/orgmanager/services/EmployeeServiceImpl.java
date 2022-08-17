@@ -75,13 +75,13 @@ public class EmployeeServiceImpl implements EmployeeService{
         employee.setAddress(dto.getAddress());
         employee.setPhone(dto.getPhone());
         employee.setEmail(dto.getEmail());
-        employee.setDesignation(designationRepo.findById(orgId, dto.getDesignationId()).orElseThrow(
+        if (dto.getDesignationId()!=null) employee.setDesignation(designationRepo.findById(orgId, dto.getDesignationId()).orElseThrow(
                 ()->new EntityNotFoundException("Designation not found")
         ));
-        employee.setDepartment(departmentRepo.findById(orgId, dto.getDepartmentId()).orElseThrow(
+        if (dto.getDepartmentId()!=null) employee.setDepartment(departmentRepo.findById(orgId, dto.getDepartmentId()).orElseThrow(
                 ()->new EntityNotFoundException("Department not found")
         ));
-        employee.setPayroll(payrollRepo.findById(orgId, dto.getPayrollId()).orElseThrow(
+        if (dto.getPayrollId()!=null) employee.setPayroll(payrollRepo.findById(orgId, dto.getPayrollId()).orElseThrow(
                 ()->new EntityNotFoundException("Payroll profile not found")
         ));
         employee.setPanNumber(dto.getPanNumber());
@@ -93,6 +93,7 @@ public class EmployeeServiceImpl implements EmployeeService{
 
     @Override
     public ResponseEntity<UpdatedDto> updateEmployee(Long orgId, UpdateEmployeeDto dto, Long id) {
+        if (!employeeRepo.existsById(orgId, id)) throw new EntityNotFoundException("Employee not found");
         Employee e = employeeRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Employee not found"));
         e.setUpdatedBy(principalService.getUser());
         if(dto.getFirstName()!=null) e.setFirstName(dto.getFirstName());

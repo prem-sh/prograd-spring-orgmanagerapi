@@ -16,7 +16,7 @@ public interface TagRepo extends JpaRepository<Tag, Long> {
     @Query("select t from Tag t where t.organization.id = ?1 and t.isDeleted = false")
     List<Tag> findAll(long id);
 
-    @Query("select t from Tag t where t.organization.id = ?1 and upper(t.tag) like upper(?2) and t.isDeleted = false")
+    @Query("select t from Tag t where t.organization.id = ?1 and upper(t.tag) like upper(concat('%', ?2,'%')) and t.isDeleted = false")
     List<Tag> filter(long id, String tag);
 
     @Query("select (count(t) > 0) from Tag t where t.organization.id = ?1 and t.id = ?2 and t.isDeleted = false")

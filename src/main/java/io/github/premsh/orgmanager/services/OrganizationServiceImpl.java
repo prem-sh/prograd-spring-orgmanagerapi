@@ -15,10 +15,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+
 @Service
 public class OrganizationServiceImpl implements OrganizationService{
     @Autowired
     OrganizationRepo organizationRepo;
+    @Autowired
+    private PrincipalService principalService;
+
     @Override
     public ResponseEntity<OrganizationsDto> getAllOrganizations() {
         return new ResponseEntity<>(new OrganizationsDto(organizationRepo.findAll()), HttpStatus.OK);
@@ -33,7 +38,10 @@ public class OrganizationServiceImpl implements OrganizationService{
 
     @Override
     public ResponseEntity<CreatedDto> createOrganization(CreateOrganizationDto orgDto) {
-        Organization newOrg = organizationRepo.save(orgDto.get());
+        Organization newOrg = orgDto.get();
+        newOrg.setUpdatedBy(principalService.getUser());
+        newOrg.setCreatedBy(principalService.getUser());
+        organizationRepo.save(newOrg);
         return new ResponseEntity<>(
                 new CreatedDto(
                         String.format("New Organization successfully created, orgId : %d",newOrg.getId())
@@ -44,12 +52,14 @@ public class OrganizationServiceImpl implements OrganizationService{
 
     @Override
     public ResponseEntity<UpdatedDto> updateOrganization(UpdateOrganizationDto orgDto, Long orgId) {
+        if(!organizationRepo.existsById(orgId)) throw new EntityNotFoundException("Organization not found");
         Organization subjectOrg = organizationRepo.findById(orgId).orElseThrow(()->new EntityNotFoundException(String.format("Organization with Id : %d not found", orgId)));
         orgDto.getUpdates(subjectOrg);
+        subjectOrg.setUpdatedBy(principalService.getUser());
         organizationRepo.save(subjectOrg);
         return new ResponseEntity<>(
                 new UpdatedDto(
-                        String.format("Organization with Id : %d updated successfuly",orgId),
+                        String.format("Organization with Id : %d updated successfully",orgId),
                         String.valueOf(orgId)
                 ), HttpStatus.OK
         );
@@ -57,7 +67,12 @@ public class OrganizationServiceImpl implements OrganizationService{
 
     @Override
     public ResponseEntity<DeletedDto> deleteOrganization(Long id) {
-        if(organizationRepo.existsById(id)) organizationRepo.deleteById(id);
+        if(!organizationRepo.existsById(id)) throw new EntityNotFoundException("Organization not found");
+        Organization subjectOrg = organizationRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("Organization with Id : %d not found", id)));
+        subjectOrg.setDeletedBy(principalService.getUser());
+        subjectOrg.setDeletedAt(new Date());
+        subjectOrg.setIsDeleted(true);
+        organizationRepo.save(subjectOrg);
         return new ResponseEntity<>(
             new DeletedDto(String.format("Deleted Organization with id : %d", id), String.valueOf(id)),
             HttpStatus.ACCEPTED

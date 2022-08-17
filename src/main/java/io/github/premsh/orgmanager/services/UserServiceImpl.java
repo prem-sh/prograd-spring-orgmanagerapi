@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.Email;
+import java.util.Date;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -26,10 +27,11 @@ public class UserServiceImpl implements UserService{
     private UserRepo userRepo;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PrincipalService principalService;
 
     @Override
     public ResponseEntity<UsersDto> getAllUsers() {
-
         return new ResponseEntity<>(new UsersDto(userRepo.findAll()), HttpStatus.OK);
     }
     @Override
@@ -57,23 +59,29 @@ public class UserServiceImpl implements UserService{
     public ResponseEntity<CreatedDto> createUser(CreateUserDto user) {
         User newUser = user.get();
         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
-        userRepo.save(newUser);
-        return new ResponseEntity<>(new CreatedDto("New User Created Successfully",String.valueOf(newUser.getId())), HttpStatus.CREATED);
+        newUser.setCreatedBy(principalService.getUser());
+        newUser.setUpdatedBy(principalService.getUser());
+        User usr = userRepo.save(newUser);
+        return new ResponseEntity<>(new CreatedDto("New User Created Successfully",String.valueOf(usr.getId())), HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<UpdatedDto> updateUser(UpdateUserDto user, Long id) {
+    public ResponseEntity<UpdatedDto> updateUser(UpdateUserDto userDto, Long id) {
         User subjectUser = userRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("User with id %d does not exist", id)));
-        user.get(subjectUser);
+        userDto.get(subjectUser); //get updates from dto
+        subjectUser.setUpdatedBy(principalService.getUser());
         userRepo.save(subjectUser);
-        return new ResponseEntity<>(new UpdatedDto("User updated successfuly", id.toString()), HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(new UpdatedDto("User updated successfully", id.toString()), HttpStatus.ACCEPTED);
     }
 
     @Override
     public ResponseEntity<DeletedDto> deleteUser(Long id) throws  EntityNotFoundException{
+        if (!userRepo.existsById(id)) throw new EntityNotFoundException("User not found");
         User subjectUser = userRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("User with id %d does not exist", id)));
-        if(userRepo.existsById(id)) userRepo.deleteById(id);
-        else throw new EntityNotFoundException(String.format("User with id %d does not exist", id));
+        subjectUser.setDeletedAt(new Date());
+        subjectUser.setDeletedBy(principalService.getUser());
+        subjectUser.setIsDeleted(true);
+        userRepo.save(subjectUser);
         return new ResponseEntity<>(new DeletedDto("User Deleted successfully", id.toString()), HttpStatus.ACCEPTED);
     }
 

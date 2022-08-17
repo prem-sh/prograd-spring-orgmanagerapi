@@ -1,5 +1,6 @@
 package io.github.premsh.orgmanager.dto.metadata;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import io.github.premsh.orgmanager.dto.user.UserCompactDto;
@@ -10,10 +11,12 @@ import lombok.Getter;
 import java.util.Date;
 
 @Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JacksonXmlRootElement(localName = "Metadata")
 public class Metadata {
 
     @Data
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private static class Action{
         UserCompactDto by = null;
         Date at = null;
