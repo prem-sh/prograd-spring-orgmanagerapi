@@ -44,9 +44,9 @@ public class UserController {
         return userService.getUserById(id);
     }
 
-    @GetMapping("/search/{search_text}")
+    @GetMapping("/filter/{searchText}")
     public ResponseEntity<UsersDto> searchUser(
-            @PathVariable(name = "search_text") String searchText,
+            @PathVariable(name = "searchText") String searchText,
             @RequestParam(name = "firstname", required = false, defaultValue = "true") Boolean fname,
             @RequestParam(name = "lastname", required = false, defaultValue = "true") Boolean lname,
             @RequestParam(name = "email", required = false, defaultValue = "true") Boolean email,

@@ -23,16 +23,16 @@ public class Asset {
     @NotNull
     @Size(max = 50)
     @Column(name = "asset_name")
-    String name;
+    private String name;
 
     @Column(name = "count")
-    long count = 0;
+    private long count = 0;
 
     @Column(name = "purchase_cost")
-    double purchaseCost;
+    private double purchaseCost;
 
     @Column(name = "current_value")
-    double currentValue;
+    private double currentValue;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;

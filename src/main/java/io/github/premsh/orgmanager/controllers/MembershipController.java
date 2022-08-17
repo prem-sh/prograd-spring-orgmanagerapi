@@ -19,7 +19,7 @@ import javax.validation.Valid;
 public class MembershipController {
     @Autowired
     MemberService memberService;
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<MembershipsDto> getAllMembers(){
         return memberService.getAllMembers();
     }

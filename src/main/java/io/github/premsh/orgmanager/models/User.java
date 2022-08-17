@@ -42,15 +42,34 @@ public class User implements UserDetails {
     private String password;
 
     @Column(name = "enabled")
-    private boolean isEnabled = true;
+    private Boolean isEnabled = true;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date deletedAt;
+
+    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
+    @JoinColumn(name = "deleted_by", referencedColumnName = "id")
+    private User deletedBy;
 
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
+    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
+    @JoinColumn(name = "created_by", referencedColumnName = "id")
+    private User createdBy;
+
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
+
+    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
+    @JoinColumn(name = "updated_by", referencedColumnName = "id")
+    private User updatedBy;
 
     @PrePersist
     private void onCreate(){

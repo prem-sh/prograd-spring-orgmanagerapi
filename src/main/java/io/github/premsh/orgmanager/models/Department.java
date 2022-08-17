@@ -1,6 +1,10 @@
 package io.github.premsh.orgmanager.models;
 
+import io.github.premsh.orgmanager.services.PrincipalService;
+import io.github.premsh.orgmanager.services.PrincipalServiceImpl;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;

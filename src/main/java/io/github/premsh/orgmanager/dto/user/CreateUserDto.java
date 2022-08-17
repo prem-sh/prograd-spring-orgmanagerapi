@@ -36,8 +36,6 @@ public class CreateUserDto {
     @Size(min = 6, message = ValidationMessage.PASSWORD_LENGTH)
     private String password;
 
-    private Boolean enabled = true;
-
 
     @Transient
     public User get(){
@@ -48,7 +46,6 @@ public class CreateUserDto {
         user.setPhone(phone);
         user.setEmail(email);
         user.setPassword(password);
-        user.setEnabled(enabled);
         return user;
     }
 }

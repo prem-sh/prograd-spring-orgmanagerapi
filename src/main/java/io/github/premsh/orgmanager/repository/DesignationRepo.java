@@ -13,7 +13,7 @@ public interface DesignationRepo extends JpaRepository<Designation, Long> {
     @Query("select d from Designation d where d.organization.id = ?1 and d.isDeleted = false")
     List<Designation> findAll(long id);
 
-    @Query("select d from Designation d where d.organization.id = ?1 and d.id = ?2 and d.isDeleted = false")
+    @Query("select d from Designation d where d.organization.id = ?1 and d.id = ?2")
     Optional<Designation> findById(long id, long id1);
 
     @Query("select (count(d) > 0) from Designation d where d.organization.id = ?1 and d.id = ?2 and d.isDeleted = false")

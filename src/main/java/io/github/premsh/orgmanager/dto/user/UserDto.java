@@ -2,33 +2,21 @@ package io.github.premsh.orgmanager.dto.user;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import io.github.premsh.orgmanager.models.Role;
+import io.github.premsh.orgmanager.dto.metadata.Metadata;
 import io.github.premsh.orgmanager.models.User;
-import lombok.Data;
 import lombok.Getter;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+
 
 @Getter
 @JacksonXmlRootElement(localName = "User")
 public class UserDto {
-    @Getter
-    private static class Metadata {
-        private final boolean isEnabled;
-        private final Date createdAt;
-        private final Date updatedAt;
 
-        public Metadata(boolean isEnabled, Date createdAt, Date updatedAt) {
-            this.isEnabled = isEnabled;
-            this.createdAt = createdAt;
-            this.updatedAt = updatedAt;
-        }
-    }
     @JacksonXmlProperty(localName = "userid", isAttribute = true)
     private final long id;
+    @JacksonXmlProperty(localName = "enabled", isAttribute = true)
+    private final Boolean enabled;
+    private final Boolean deleted;
     private final String firstName;
     private final String lastName;
     private final String address;
@@ -43,6 +31,15 @@ public class UserDto {
         this.address = user.getAddress();
         this.phone = user.getPhone();
         this.email = user.getEmail();
-        this.metadata = new Metadata(user.isEnabled(), user.getCreatedAt(), user.getUpdatedAt());
+        this.enabled = user.getIsEnabled();
+        this.deleted = user.getIsDeleted();
+        this.metadata = new Metadata(
+                user.getCreatedBy(),
+                user.getCreatedAt(),
+                user.getUpdatedBy(),
+                user.getUpdatedAt(),
+                user.getDeletedBy(),
+                user.getDeletedAt()
+        );
     }
 }

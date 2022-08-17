@@ -37,7 +37,7 @@ public class UpdateUserDto {
         if (address!=null) user.setAddress(address);
         if (phone!=null) user.setPhone(phone);
         if (password!=null) user.setPassword(password);
-        if (enabled!=null) user.setEnabled(enabled);
+        if (enabled!=null) user.setIsEnabled(enabled);
         return user;
     }
 }

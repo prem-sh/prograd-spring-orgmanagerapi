@@ -7,8 +7,8 @@ import java.util.Date;
 
 @Data
 @Entity
-@Table(name="employee_salary_slip")
-public class EmployeeSalarySlip {
+@Table(name="employee_attendance")
+public class Attendance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -16,17 +16,13 @@ public class EmployeeSalarySlip {
     @ManyToOne(targetEntity = Employee.class, cascade =CascadeType.ALL)
     private Employee employee;
 
-    @Temporal(TemporalType.DATE)
-    private Date date;
+    @Column(name = "login_time")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date loginTime;
 
-    @Column(name = "slip_url")
-    private String slipUrl;
-
-    @Column(name = "is_slip_generated")
-    private Boolean slipGenerated = false;
-
-    @Column(name = "is_slip_delivered")
-    private Boolean slipDelivered = false;
+    @Column(name = "logout_time")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date logoutTime;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;

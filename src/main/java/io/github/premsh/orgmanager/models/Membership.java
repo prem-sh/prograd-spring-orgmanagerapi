@@ -37,4 +37,5 @@ public class Membership {
     public int hashCode() {
         return Objects.hash(id, user);
     }
+
 }

@@ -43,20 +43,31 @@ public class Organization {
     private String email;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    private Boolean isDeleted = false;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "deleted_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date deletedAt;
+
+    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
+    @JoinColumn(name = "deleted_by", referencedColumnName = "id")
+    private User deletedBy;
+
+    @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
+
+    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
+    @JoinColumn(name = "created_by", referencedColumnName = "id")
+    private User createdBy;
 
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-    @Column(name = "deleted_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    @ColumnDefault("null")
-    private Date deletedAt;
+    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
+    @JoinColumn(name = "updated_by", referencedColumnName = "id")
+    private User updatedBy;
 
     @PrePersist
     private void onCreate(){
