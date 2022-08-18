@@ -1,50 +1,31 @@
 package io.github.premsh.orgmanager.models;
 
-import io.github.premsh.orgmanager.constants.ValidationMessage;
 import lombok.Data;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import java.util.Date;
+import java.util.Objects;
 
 @Data
 @Entity
-@Table(name="employee")
-public class Employee {
+@Table(name = "member_profile")
+public class MemberProfile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
+
+    @NotNull
+    @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER)
+    private User user;
 
     @NotNull
     @ManyToOne(targetEntity = Organization.class, fetch = FetchType.EAGER)
     private Organization organization;
 
     @NotNull
-    @Size(max = 50)
-    @Column(name = "firstname", nullable = false)
-    private String firstName;
-
-    @NotNull
-    @Size(max = 50)
-    @Column(name = "lastname", nullable = true)
-    private String lastName;
-
-    @Column(name = "address", nullable = false)
-    private String address;
-
-    @NotNull
-    @Size(max = 15, message = ValidationMessage.PHONE_LENGTH_CONSTRAINT)
-    @Pattern(regexp = "^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$", message = ValidationMessage.PHONE_PATTERN_CONSTRAINT )
-    @Column(name = "phone", length = 15, nullable = false)
-    private String phone;
-
-    @Email
-    @NotNull
-    @Column(name = "email", length = 50, nullable = false)
-    private String email;
+    @ManyToOne(targetEntity = Role.class, fetch = FetchType.EAGER)
+    private Role role;
 
     @ManyToOne(targetEntity = Designation.class, fetch = FetchType.EAGER)
     private Designation designation;
@@ -100,4 +81,21 @@ public class Employee {
     private void onUpdate(){
         this.updatedAt = new Date();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        MemberProfile that = (MemberProfile) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, user);
+    }
+
 }

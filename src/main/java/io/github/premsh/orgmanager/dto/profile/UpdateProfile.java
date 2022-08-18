@@ -1,19 +1,17 @@
-package io.github.premsh.orgmanager.dto.employee;
+package io.github.premsh.orgmanager.dto.profile;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import io.github.premsh.orgmanager.constants.ValidationMessage;
 import io.github.premsh.orgmanager.models.User;
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.data.annotation.Transient;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-@Data
-@JacksonXmlRootElement(localName = "Employee")
-public class UpdateEmployeeDto {
+@Getter
+@JacksonXmlRootElement(localName = "Profile")
+public class UpdateProfile {
 
     @Size(max = 50, message = ValidationMessage.FIRSTNAME_CONSTRAINT)
     private String firstName;
@@ -32,22 +30,6 @@ public class UpdateEmployeeDto {
     private String password;
 
     private Boolean enabled;
-
-
-
-    private String role;
-
-    private String designation;
-
-    private String department;
-
-    private Long payrollId;
-
-    private String panNumber;
-
-    private String bankAccountNumber;
-
-    private String ifsc;
 
     @Transient
     public User getUser(User user){

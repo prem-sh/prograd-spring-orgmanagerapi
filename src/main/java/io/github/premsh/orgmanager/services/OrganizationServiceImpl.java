@@ -1,5 +1,7 @@
 package io.github.premsh.orgmanager.services;
 
+import com.sun.jdi.InternalException;
+import io.github.premsh.orgmanager.constants.RoleConstants;
 import io.github.premsh.orgmanager.dto.organization.CreateOrganizationDto;
 import io.github.premsh.orgmanager.dto.organization.OrganizationDto;
 import io.github.premsh.orgmanager.dto.organization.OrganizationsDto;
@@ -8,14 +10,20 @@ import io.github.premsh.orgmanager.dto.response.CreatedDto;
 import io.github.premsh.orgmanager.dto.response.DeletedDto;
 import io.github.premsh.orgmanager.dto.response.UpdatedDto;
 import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityNotFoundException;
+import io.github.premsh.orgmanager.models.MemberProfile;
 import io.github.premsh.orgmanager.models.Organization;
+import io.github.premsh.orgmanager.models.User;
+import io.github.premsh.orgmanager.repository.MemberProfileRepo;
 import io.github.premsh.orgmanager.repository.OrganizationRepo;
+import io.github.premsh.orgmanager.repository.RoleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Service
 public class OrganizationServiceImpl implements OrganizationService{
@@ -23,37 +31,74 @@ public class OrganizationServiceImpl implements OrganizationService{
     OrganizationRepo organizationRepo;
     @Autowired
     private PrincipalService principalService;
+    @Autowired
+    private MemberProfileRepo memberProfileRepo;
+    @Autowired
+    private RoleRepo roleRepo;
 
     @Override
     public ResponseEntity<OrganizationsDto> getAllOrganizations() {
-        return new ResponseEntity<>(new OrganizationsDto(organizationRepo.findAll()), HttpStatus.OK);
+        User usr = principalService.getUser();
+
+        if(usr == null) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
+        if (usr.getRoles().contains(RoleConstants.SUPERADMIN) || usr.getRoles().contains(RoleConstants.SUPPORT)){
+            return new ResponseEntity<>(new OrganizationsDto(organizationRepo.findAll()), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(new OrganizationsDto(
+                    memberProfileRepo.findByUserId(usr.getId()).stream().map(MemberProfile::getOrganization).collect(Collectors.toList())
+            ), HttpStatus.OK);
+        }
     }
 
     @Override
     public ResponseEntity<OrganizationDto> getOrganizationById(Long id) {
-        return new ResponseEntity<>(
-                new OrganizationDto(organizationRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("Organization with id %d not found", id)))),HttpStatus.OK
-        );
+        User usr = principalService.getUser();
+        if(usr == null) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
+        if (usr.getRoles().contains(RoleConstants.SUPERADMIN) || usr.getRoles().contains(RoleConstants.SUPPORT)){
+            return new ResponseEntity<>(
+                    new OrganizationDto(organizationRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("Organization with id %d not found", id)))),HttpStatus.OK
+            );
+        }else{
+            return new ResponseEntity<>(new OrganizationDto(
+                    (memberProfileRepo.findByOrgIdUserId(id, usr.getId()).orElseThrow(()->new EntityNotFoundException("Organiztion not found"))).getOrganization()
+            ), HttpStatus.OK);
+        }
     }
 
     @Override
     public ResponseEntity<CreatedDto> createOrganization(CreateOrganizationDto orgDto) {
+        User usr = principalService.getUser();
+        if(usr == null) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         Organization newOrg = orgDto.get();
         newOrg.setUpdatedBy(principalService.getUser());
         newOrg.setCreatedBy(principalService.getUser());
-        organizationRepo.save(newOrg);
+        Organization org = organizationRepo.save(newOrg);
+
+        MemberProfile memberProfile = new MemberProfile();
+        memberProfile.setUser(usr);
+        memberProfile.setRole(roleRepo.findByRoleName(RoleConstants.ADMIN).orElseThrow(()->new EntityNotFoundException("Internal error : User Role not found")));
+        memberProfile.setOrganization(org);
+        memberProfile.setCreatedBy(usr);
+        memberProfile.setUpdatedBy(usr);
+        memberProfileRepo.save(memberProfile);
+
         return new ResponseEntity<>(
                 new CreatedDto(
                         String.format("New Organization successfully created, orgId : %d",newOrg.getId())
-                        ,String.valueOf(newOrg.getId())
+                        ,String.valueOf(org.getId())
                 ),HttpStatus.CREATED
         );
     }
 
     @Override
     public ResponseEntity<UpdatedDto> updateOrganization(UpdateOrganizationDto orgDto, Long orgId) {
-        if(!organizationRepo.existsById(orgId)) throw new EntityNotFoundException("Organization not found");
-        Organization subjectOrg = organizationRepo.findById(orgId).orElseThrow(()->new EntityNotFoundException(String.format("Organization with Id : %d not found", orgId)));
+        User usr = principalService.getUser();
+        if(usr == null) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
+        Organization subjectOrg = (memberProfileRepo.findByOrgIdUserIdRoleId(orgId, usr.getId(), RoleConstants.ADMIN).orElseThrow(()->new EntityNotFoundException(String.format("Organization with Id : %d not found", orgId)))).getOrganization();
         orgDto.getUpdates(subjectOrg);
         subjectOrg.setUpdatedBy(principalService.getUser());
         organizationRepo.save(subjectOrg);
@@ -67,8 +112,10 @@ public class OrganizationServiceImpl implements OrganizationService{
 
     @Override
     public ResponseEntity<DeletedDto> deleteOrganization(Long id) {
-        if(!organizationRepo.existsById(id)) throw new EntityNotFoundException("Organization not found");
-        Organization subjectOrg = organizationRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("Organization with Id : %d not found", id)));
+        User usr = principalService.getUser();
+        if(usr == null) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
+        Organization subjectOrg = (memberProfileRepo.findByOrgIdUserIdRoleId(id, usr.getId(), RoleConstants.ADMIN).orElseThrow(()->new EntityNotFoundException(String.format("Organization with Id : %d not found", id)))).getOrganization();
         subjectOrg.setDeletedBy(principalService.getUser());
         subjectOrg.setDeletedAt(new Date());
         subjectOrg.setIsDeleted(true);

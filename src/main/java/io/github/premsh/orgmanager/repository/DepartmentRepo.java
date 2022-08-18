@@ -21,5 +21,12 @@ public interface DepartmentRepo  extends JpaRepository<Department, Long>{
 
     @Query("select d from Department d where d.organization.id = ?1 and d.departmentName like concat('%', ?2,'%') and d.isDeleted = false")
     List<Department> filter(long id, String departmentName);
+
+    @Query("""
+            select d from Department d
+            where d.organization.id = ?1 and d.departmentName = ?2 and d.organization.isDeleted = false""")
+    Optional<Department> findByName(long id, String departmentName);
+
+
     
 }

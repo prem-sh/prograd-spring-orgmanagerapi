@@ -1,6 +1,6 @@
 package io.github.premsh.orgmanager.models;
 
-import lombok.Data;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
@@ -111,11 +111,18 @@ public class User implements UserDetails {
             cascade = CascadeType.ALL,
             orphanRemoval = true,fetch = FetchType.EAGER
     )
-    private Set<Membership> memberships = new HashSet<>();
+    private Set<MemberProfile> memberProfile = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<GrantedAuthority> authorities = memberships.stream().map((mem) -> new SimpleGrantedAuthority(mem.getRole().getRoleName())).collect(Collectors.toList());
+        List<GrantedAuthority> authorities = memberProfile.stream().map((mem) -> new SimpleGrantedAuthority(mem.getRole().getRoleName())).collect(Collectors.toList());
+        System.out.println(Arrays.toString(authorities.toArray()));
+        return authorities;
+    }
+
+    @Transient
+    public Collection<String> getRoles() {
+        List<String> authorities = memberProfile.stream().map((mem) -> mem.getRole().getRoleName()).collect(Collectors.toList());
         System.out.println(Arrays.toString(authorities.toArray()));
         return authorities;
     }

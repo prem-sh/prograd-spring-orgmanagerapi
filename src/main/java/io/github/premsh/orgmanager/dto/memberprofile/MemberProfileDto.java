@@ -1,39 +1,32 @@
-package io.github.premsh.orgmanager.dto.employee;
+package io.github.premsh.orgmanager.dto.memberprofile;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import io.github.premsh.orgmanager.constants.ValidationMessage;
 import io.github.premsh.orgmanager.dto.department.DepartmentDto;
 import io.github.premsh.orgmanager.dto.designation.DesignationDto;
-import io.github.premsh.orgmanager.dto.memberprofile.MemberProfileDto;
 import io.github.premsh.orgmanager.dto.metadata.Metadata;
 import io.github.premsh.orgmanager.dto.organization.OrganizationCompactDto;
+import io.github.premsh.orgmanager.dto.organization.OrganizationDto;
 import io.github.premsh.orgmanager.dto.payroll.PayrollDto;
 import io.github.premsh.orgmanager.dto.role.RoleDto;
 import io.github.premsh.orgmanager.dto.user.UserCompactDto;
-import io.github.premsh.orgmanager.models.*;
+import io.github.premsh.orgmanager.dto.user.UserDto;
+import io.github.premsh.orgmanager.models.Employee;
+import io.github.premsh.orgmanager.models.MemberProfile;
 import lombok.Getter;
 
-import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 
 @Getter
-@JacksonXmlRootElement(localName = "Employee")
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class EmployeeDto {
+@JacksonXmlRootElement(localName = "MemberProfile")
+public class MemberProfileDto {
 
-    @JacksonXmlProperty(isAttribute = true, localName = "employee_id")
+    @JacksonXmlProperty(isAttribute = true)
     private final Long id;
     @JacksonXmlProperty(isAttribute = true)
     private  Boolean deleted;
-    private UserCompactDto user;
+    private  UserCompactDto user;
     private  OrganizationCompactDto organization;
-    private RoleDto role;
+    private  RoleDto role;
     private  DesignationDto designation;
     private  DepartmentDto department;
     private  PayrollDto payroll;
@@ -44,7 +37,7 @@ public class EmployeeDto {
 
 
 
-    public EmployeeDto(MemberProfile profile) {
+    public MemberProfileDto(MemberProfile profile) {
         this.id = profile.getId();
         this.deleted = profile.getIsDeleted();
         this.panNumber = profile.getPanNumber();

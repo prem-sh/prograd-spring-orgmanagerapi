@@ -4,4 +4,5 @@ import io.github.premsh.orgmanager.models.User;
 
 public interface PrincipalService {
     User getUser();
+    Boolean isMemberOfOrg(Long orgId);
 }

@@ -40,7 +40,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUserByIdOrEmail(@RequestParam(name = "id", required = false) Long id){
+    public ResponseEntity<UserDto> getUserByIdOrEmail(@PathVariable Long id){
         return userService.getUserById(id);
     }
 
@@ -50,10 +50,10 @@ public class UserController {
             @RequestParam(name = "firstname", required = false, defaultValue = "true") Boolean fname,
             @RequestParam(name = "lastname", required = false, defaultValue = "true") Boolean lname,
             @RequestParam(name = "email", required = false, defaultValue = "true") Boolean email,
-            @RequestParam(name = "orgname", required = false, defaultValue = "true") Boolean orgname,
+            @RequestParam(name = "address", required = false, defaultValue = "true") Boolean address,
             @RequestParam(name = "phone", required = false, defaultValue = "true") Boolean phone
     ){
-        return userService.searchUsers(searchText, fname, lname, email, orgname, phone);
+        return userService.searchUsers(searchText, fname, lname, email, address, phone);
     }
 
     @PostMapping

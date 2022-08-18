@@ -7,4 +7,5 @@ import org.springframework.http.ResponseEntity;
 public interface RoleService {
     ResponseEntity<RolesDto> getAllRoles();
     ResponseEntity<RoleDto> getRoleById(Long id);
+
 }

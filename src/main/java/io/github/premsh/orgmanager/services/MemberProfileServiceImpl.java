@@ -1,42 +1,36 @@
 package io.github.premsh.orgmanager.services;
 
-import io.github.premsh.orgmanager.constants.RoleConstants;
-import io.github.premsh.orgmanager.dto.employee.CreateEmployeeDto;
 import io.github.premsh.orgmanager.dto.employee.EmployeeDto;
 import io.github.premsh.orgmanager.dto.employee.EmployeesDto;
-import io.github.premsh.orgmanager.dto.employee.UpdateEmployeeDto;
+import io.github.premsh.orgmanager.dto.memberprofile.CreateMemberProfileDto;
+import io.github.premsh.orgmanager.dto.memberprofile.MemberProfileDto;
+import io.github.premsh.orgmanager.dto.memberprofile.MemberProfilesDto;
+import io.github.premsh.orgmanager.dto.memberprofile.UpdateMemberProfileDto;
 import io.github.premsh.orgmanager.dto.response.CreatedDto;
 import io.github.premsh.orgmanager.dto.response.DeletedDto;
 import io.github.premsh.orgmanager.dto.response.UpdatedDto;
 import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityNotFoundException;
-import io.github.premsh.orgmanager.models.Designation;
 import io.github.premsh.orgmanager.models.Employee;
 import io.github.premsh.orgmanager.models.MemberProfile;
-import io.github.premsh.orgmanager.models.User;
 import io.github.premsh.orgmanager.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Service
-public class EmployeeServiceImpl implements EmployeeService{
+public class MemberProfileServiceImpl implements MemberProfileService{
 
-    @Autowired
-    OrganizationRepo organizationRepo;
-    @Autowired
-    private PrincipalService principalService;
     @Autowired
     private MemberProfileRepo memberProfileRepo;
     @Autowired
-    private RoleRepo roleRepo;
+    private UserRepo userRepo;
     @Autowired
-    private EmployeeRepo employeeRepo;
+    private OrganizationRepo organizationRepo;
+    @Autowired
+    private PrincipalService principalService;
     @Autowired
     private DesignationRepo designationRepo;
     @Autowired
@@ -44,64 +38,35 @@ public class EmployeeServiceImpl implements EmployeeService{
     @Autowired
     private PayrollRepo payrollRepo;
     @Autowired
-    private UserRepo userRepo;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private RoleRepo roleRepo;
 
     @Override
-    public ResponseEntity<EmployeeDto> getEmployeeById(Long orgId, Long id) {
-//        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-
-        MemberProfile m = memberProfileRepo.findByOrgIdUserIdRoleId(orgId, id, RoleConstants.EMPLOYEE).orElseThrow(
-                ()-> new EntityNotFoundException("Employee not found")
-        );
+    public ResponseEntity<MemberProfilesDto> getAllMembers(Long orgId) {
+        System.out.println("Entry");
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         return new ResponseEntity<>(
-                new EmployeeDto(m), HttpStatus.OK
-        ) ;
-    }
-
-    @Override
-    public ResponseEntity<EmployeesDto> getAllEmployees(Long orgId) {
-        System.out.println("GGGGGGG");
-//        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-
-        List<MemberProfile> m = memberProfileRepo.findByOrgIdRoleName(orgId, RoleConstants.EMPLOYEE);
-        return new ResponseEntity<>(
-                new EmployeesDto(m), HttpStatus.OK
+                new MemberProfilesDto(memberProfileRepo.findAll(orgId)), HttpStatus.OK
         );
     }
 
     @Override
-    public ResponseEntity<EmployeesDto> filterEmployees(Long orgId, String searchText, Boolean firstname, Boolean lastname, Boolean email, Boolean address, Boolean phone) {
-//        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-
-        List<MemberProfile> filtrate = new ArrayList<>();
-        if(firstname) filtrate.addAll(memberProfileRepo.filterFirstname(orgId,searchText));
-        if(lastname) filtrate.addAll(memberProfileRepo.filterLastname(orgId,searchText));
-        if(email) filtrate.addAll(memberProfileRepo.filterEmail(orgId,searchText));
-        if(address) filtrate.addAll(memberProfileRepo.filterAddress(orgId,searchText));
-        if(phone) filtrate.addAll(memberProfileRepo.filterPhone(orgId,searchText));
-
-        return new ResponseEntity<>(
-                new EmployeesDto(filtrate), HttpStatus.OK
-        );
-    }
-
-    @Override
-    public ResponseEntity<CreatedDto> createEmployee(Long orgId, CreateEmployeeDto dto) {
+    public ResponseEntity<MemberProfileDto> getMemberById(Long orgId, Long memId) {
         if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
-        User newUser = dto.getUser();
-        newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
-        newUser.setCreatedBy(principalService.getUser());
-        newUser.setUpdatedBy(principalService.getUser());
-        User usr = userRepo.save(newUser);
+        return new ResponseEntity<>(
+                new MemberProfileDto(memberProfileRepo.findById(orgId, memId).orElseThrow(()->new EntityNotFoundException("Member not found"))), HttpStatus.OK
+        );
+    }
+
+    @Override
+    public ResponseEntity<CreatedDto> createMembership(Long orgId, CreateMemberProfileDto dto) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         MemberProfile member = new MemberProfile();
         member.setCreatedBy(principalService.getUser());
         member.setUpdatedBy(principalService.getUser());
         member.setOrganization(organizationRepo.findById(orgId).orElseThrow(()->new EntityNotFoundException("Organization not found")));
-        member.setUser(usr);
+        member.setUser(userRepo.findByEmail(dto.getEmail()).orElseThrow(()->new EntityNotFoundException("User not found")));
         member.setRole(roleRepo.findByRoleName(dto.getRole()).orElseThrow(()->new EntityNotFoundException("Role does not exist")));
         if (dto.getDesignation()!=null) member.setDesignation(designationRepo.findByName(orgId, dto.getDesignation()).orElseThrow(
                 ()->new EntityNotFoundException("Designation not found")
@@ -116,16 +81,14 @@ public class EmployeeServiceImpl implements EmployeeService{
         if (dto.getBankAccountNumber()!=null) member.setBankAccountNumber(dto.getBankAccountNumber());
         if (dto.getIfsc()!=null) member.setIfsc(dto.getIfsc());
         MemberProfile newMem =  memberProfileRepo.save(member);
-
-        return new ResponseEntity<>(new CreatedDto("Employee created successfully",String.valueOf(newMem.getId())), HttpStatus.CREATED);
+        return new ResponseEntity<>(new CreatedDto("Nwe Member added successfully",String.valueOf(newMem.getId())), HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<UpdatedDto> updateEmployee(Long orgId, UpdateEmployeeDto dto, Long id) {
+    public ResponseEntity<UpdatedDto> updateMembership(Long orgId, UpdateMemberProfileDto dto, Long memId) {
         if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
-        MemberProfile member = memberProfileRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
-
+        MemberProfile member = memberProfileRepo.findById(orgId, memId).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
         member.setUpdatedBy(principalService.getUser());
         if (dto.getRole()!=null)member.setRole(roleRepo.findByRoleName(dto.getRole()).orElseThrow(()->new EntityNotFoundException("Role does not exist")));
         if (dto.getDesignation()!=null) member.setDesignation(designationRepo.findByName(orgId, dto.getDesignation()).orElseThrow(
@@ -141,28 +104,24 @@ public class EmployeeServiceImpl implements EmployeeService{
         if (dto.getBankAccountNumber()!=null) member.setBankAccountNumber(dto.getBankAccountNumber());
         if (dto.getIfsc()!=null) member.setIfsc(dto.getIfsc());
         memberProfileRepo.save(member);
-
-        //////
-
-        User subjectUser = userRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("User with id %d does not exist", id)));
-        dto.getUser(subjectUser); //get updates from dto
-        subjectUser.setUpdatedBy(principalService.getUser());
-        userRepo.save(subjectUser);
-        //////
-
-        return new ResponseEntity<>(new UpdatedDto("Employee updated successfully",String.valueOf(member.getId())), HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(new UpdatedDto("Member profile Updated successfully",String.valueOf(member.getId())), HttpStatus.ACCEPTED);
     }
 
     @Override
-    public ResponseEntity<DeletedDto> deleteEmployee(Long orgId, Long id) {
-        if (!employeeRepo.existsById(orgId, id)) throw new EntityNotFoundException("Employee not found");
+    public ResponseEntity<DeletedDto> removeMember(Long orgId, Long memId) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
-        MemberProfile member = memberProfileRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
+        MemberProfile member = memberProfileRepo.findById(orgId, memId).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
         member.setDeletedBy(principalService.getUser());
         member.setDeletedAt(new Date());
         member.setIsDeleted(true);
         memberProfileRepo.save(member);
+        return new ResponseEntity<>(new DeletedDto("Member profile Deleted successfully",String.valueOf(member.getId())), HttpStatus.ACCEPTED);
+    }
 
-        return new ResponseEntity<>(new DeletedDto("Employee deleted successfully",String.valueOf(member.getId())), HttpStatus.ACCEPTED);
+    @Override
+    public ResponseEntity<MemberProfilesDto> filterMembers(Long orgId, String filterText, Boolean byName, Boolean byEmail, Boolean byPhone, Boolean byAddress) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        return null;
     }
 }

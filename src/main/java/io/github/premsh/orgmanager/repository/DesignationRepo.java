@@ -23,6 +23,10 @@ public interface DesignationRepo extends JpaRepository<Designation, Long> {
             select d from Designation d
             where d.organization.id = ?1 and d.designationName like concat('%', ?2,'%') and d.isDeleted = false""")
     List<Designation> filter(long id, String designationName);
+
+    @Query("select d from Designation d where d.organization.id = ?1 and d.designationName = ?2 and d.isDeleted = false")
+    Optional<Designation> findByName(long id, String designationName);
+
     
     
 

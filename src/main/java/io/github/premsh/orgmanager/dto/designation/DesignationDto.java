@@ -15,12 +15,12 @@ import java.util.Date;
 @Getter
 public class DesignationDto {
     @JacksonXmlProperty(isAttribute = true)
-    private final Long disId;
+    private Long disId;
     @JacksonXmlProperty(isAttribute = true)
-    private final Boolean isDeleted;
-    private final String name;
-    private final OrganizationCompactDto organization;
-    private final Metadata metadata;
+    private Boolean isDeleted;
+    private String name;
+    private OrganizationCompactDto organization;
+    private Metadata metadata;
 
     public DesignationDto(Designation dis) {
         this.disId = dis.getId();

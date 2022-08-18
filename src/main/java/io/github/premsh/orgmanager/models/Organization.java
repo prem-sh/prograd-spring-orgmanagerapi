@@ -3,6 +3,7 @@ package io.github.premsh.orgmanager.models;
 import io.github.premsh.orgmanager.constants.ValidationMessage;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.validator.constraints.URL;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -25,6 +26,7 @@ public class Organization {
     private String name;
 
 
+    @URL
     @Column(name = "website")
     private String website;
 

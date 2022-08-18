@@ -16,6 +16,7 @@ public class UserDto {
     private final long id;
     @JacksonXmlProperty(localName = "enabled", isAttribute = true)
     private final Boolean enabled;
+    @JacksonXmlProperty(localName = "deleted", isAttribute = true)
     private final Boolean deleted;
     private final String firstName;
     private final String lastName;
