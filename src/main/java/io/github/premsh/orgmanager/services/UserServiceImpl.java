@@ -9,7 +9,6 @@ import io.github.premsh.orgmanager.dto.user.UpdateUserDto;
 import io.github.premsh.orgmanager.dto.user.UserDto;
 import io.github.premsh.orgmanager.dto.user.UsersDto;
 import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityNotFoundException;
-import io.github.premsh.orgmanager.models.Employee;
 import io.github.premsh.orgmanager.models.User;
 import io.github.premsh.orgmanager.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;

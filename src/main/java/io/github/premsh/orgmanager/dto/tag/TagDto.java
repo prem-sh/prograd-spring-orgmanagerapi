@@ -7,6 +7,9 @@ import io.github.premsh.orgmanager.dto.organization.OrganizationCompactDto;
 import io.github.premsh.orgmanager.models.Tag;
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @JacksonXmlRootElement(localName = "Tag")
 public class TagDto {

@@ -3,7 +3,6 @@ package io.github.premsh.orgmanager.dto.employee;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import io.github.premsh.orgmanager.models.Employee;
 import io.github.premsh.orgmanager.models.MemberProfile;
 import lombok.Getter;
 

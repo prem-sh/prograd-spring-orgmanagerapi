@@ -1,13 +1,10 @@
 package io.github.premsh.orgmanager.dto.employee;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import io.github.premsh.orgmanager.constants.ValidationMessage;
 import io.github.premsh.orgmanager.dto.department.DepartmentDto;
 import io.github.premsh.orgmanager.dto.designation.DesignationDto;
-import io.github.premsh.orgmanager.dto.memberprofile.MemberProfileDto;
 import io.github.premsh.orgmanager.dto.metadata.Metadata;
 import io.github.premsh.orgmanager.dto.organization.OrganizationCompactDto;
 import io.github.premsh.orgmanager.dto.payroll.PayrollDto;
@@ -15,12 +12,6 @@ import io.github.premsh.orgmanager.dto.role.RoleDto;
 import io.github.premsh.orgmanager.dto.user.UserCompactDto;
 import io.github.premsh.orgmanager.models.*;
 import lombok.Getter;
-
-import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 
 @Getter
 @JacksonXmlRootElement(localName = "Employee")

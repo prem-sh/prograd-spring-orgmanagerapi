@@ -10,7 +10,6 @@ import io.github.premsh.orgmanager.dto.response.DeletedDto;
 import io.github.premsh.orgmanager.dto.response.UpdatedDto;
 import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityNotFoundException;
 import io.github.premsh.orgmanager.models.Designation;
-import io.github.premsh.orgmanager.models.Employee;
 import io.github.premsh.orgmanager.models.MemberProfile;
 import io.github.premsh.orgmanager.models.User;
 import io.github.premsh.orgmanager.repository.*;
@@ -36,8 +35,6 @@ public class EmployeeServiceImpl implements EmployeeService{
     @Autowired
     private RoleRepo roleRepo;
     @Autowired
-    private EmployeeRepo employeeRepo;
-    @Autowired
     private DesignationRepo designationRepo;
     @Autowired
     private DepartmentRepo departmentRepo;
@@ -50,7 +47,7 @@ public class EmployeeServiceImpl implements EmployeeService{
 
     @Override
     public ResponseEntity<EmployeeDto> getEmployeeById(Long orgId, Long id) {
-//        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         MemberProfile m = memberProfileRepo.findByOrgIdUserIdRoleId(orgId, id, RoleConstants.EMPLOYEE).orElseThrow(
                 ()-> new EntityNotFoundException("Employee not found")
@@ -62,8 +59,7 @@ public class EmployeeServiceImpl implements EmployeeService{
 
     @Override
     public ResponseEntity<EmployeesDto> getAllEmployees(Long orgId) {
-        System.out.println("GGGGGGG");
-//        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         List<MemberProfile> m = memberProfileRepo.findByOrgIdRoleName(orgId, RoleConstants.EMPLOYEE);
         return new ResponseEntity<>(
@@ -73,7 +69,7 @@ public class EmployeeServiceImpl implements EmployeeService{
 
     @Override
     public ResponseEntity<EmployeesDto> filterEmployees(Long orgId, String searchText, Boolean firstname, Boolean lastname, Boolean email, Boolean address, Boolean phone) {
-//        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         List<MemberProfile> filtrate = new ArrayList<>();
         if(firstname) filtrate.addAll(memberProfileRepo.filterFirstname(orgId,searchText));
@@ -142,20 +138,16 @@ public class EmployeeServiceImpl implements EmployeeService{
         if (dto.getIfsc()!=null) member.setIfsc(dto.getIfsc());
         memberProfileRepo.save(member);
 
-        //////
-
         User subjectUser = userRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("User with id %d does not exist", id)));
         dto.getUser(subjectUser); //get updates from dto
         subjectUser.setUpdatedBy(principalService.getUser());
         userRepo.save(subjectUser);
-        //////
 
         return new ResponseEntity<>(new UpdatedDto("Employee updated successfully",String.valueOf(member.getId())), HttpStatus.ACCEPTED);
     }
 
     @Override
     public ResponseEntity<DeletedDto> deleteEmployee(Long orgId, Long id) {
-        if (!employeeRepo.existsById(orgId, id)) throw new EntityNotFoundException("Employee not found");
 
         MemberProfile member = memberProfileRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
         member.setDeletedBy(principalService.getUser());

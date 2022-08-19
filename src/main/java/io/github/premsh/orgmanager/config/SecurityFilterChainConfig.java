@@ -45,7 +45,7 @@ public class SecurityFilterChainConfig {
                     .antMatchers(HttpMethod.POST,"/org/*/employee").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.EMPLOYEE_MANAGER)
                     .antMatchers(HttpMethod.DELETE,"/org/*/employee/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN)
                     .antMatchers(HttpMethod.PUT,"/org/*/employee/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.EMPLOYEE_MANAGER )
-                    .antMatchers(HttpMethod.GET,"/org/*/employee/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN, RoleConstants.EMPLOYEE_MANAGER, RoleConstants.EMPLOYEE_ATTENDANCE_MANAGER,RoleConstants.EMPLOYEE_PAYROLL_MANAGER, RoleConstants.EMPLOYEE)
+                    .antMatchers(HttpMethod.GET,"/org/*/employee/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN, RoleConstants.EMPLOYEE_MANAGER, RoleConstants.EMPLOYEE_ATTENDANCE_MANAGER,RoleConstants.EMPLOYEE_PAYROLL_MANAGER)
 //
 //                  DepartmentController
                     .antMatchers(HttpMethod.POST,"/org/*/department").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN)
@@ -59,18 +59,7 @@ public class SecurityFilterChainConfig {
                     .antMatchers(HttpMethod.PUT,"/org/*/designation/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN)
                     .antMatchers(HttpMethod.GET,"/org/*/designation/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN, RoleConstants.EMPLOYEE_MANAGER, RoleConstants.EMPLOYEE_ATTENDANCE_MANAGER, RoleConstants.EMPLOYEE_PAYROLL_MANAGER)
 //
-//                  AttendanceController
-                    .antMatchers(HttpMethod.POST,"/org/*/attendance").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.EMPLOYEE_MANAGER, RoleConstants.EMPLOYEE_ATTENDANCE_MANAGER)
-                    .antMatchers(HttpMethod.DELETE,"/org/*/attendance/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.EMPLOYEE_MANAGER )
-                    .antMatchers(HttpMethod.PUT,"/org/*/attendance/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.EMPLOYEE_MANAGER, RoleConstants.EMPLOYEE_ATTENDANCE_MANAGER )
-                    .antMatchers(HttpMethod.GET,"/org/*/attendance/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN, RoleConstants.EMPLOYEE_MANAGER, RoleConstants.EMPLOYEE_ATTENDANCE_MANAGER,RoleConstants.EMPLOYEE_PAYROLL_MANAGER)
-//
-//                  SalarySlipController
-                    .antMatchers(HttpMethod.POST,"/org/*/salaryslip").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.EMPLOYEE_MANAGER, RoleConstants.EMPLOYEE_PAYROLL_MANAGER )
-                    .antMatchers(HttpMethod.DELETE,"/org/*/salaryslip/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.EMPLOYEE_MANAGER )
-                    .antMatchers(HttpMethod.PUT,"/org/*/salaryslip/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.EMPLOYEE_MANAGER, RoleConstants.EMPLOYEE_PAYROLL_MANAGER )
-                    .antMatchers(HttpMethod.GET,"/org/*/salaryslip/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN, RoleConstants.EMPLOYEE_MANAGER,RoleConstants.EMPLOYEE_PAYROLL_MANAGER)
-//
+
 //                  PayrollController
                     .antMatchers(HttpMethod.POST,"/org/*/payroll").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.EMPLOYEE_MANAGER, RoleConstants.EMPLOYEE_PAYROLL_MANAGER )
                     .antMatchers(HttpMethod.DELETE,"/org/*/payroll/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.EMPLOYEE_MANAGER)
@@ -87,7 +76,7 @@ public class SecurityFilterChainConfig {
                     .antMatchers(HttpMethod.GET,"/org/*/tag").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER )
                     .antMatchers(HttpMethod.DELETE,"/org/*/tag/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER )
                     .antMatchers(HttpMethod.PUT,"/org/*/tag/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER )
-                    .antMatchers(HttpMethod.GET,"/org/*/tag/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN)
+                    .antMatchers(HttpMethod.GET,"/org/*/tag/**").hasAnyAuthority(RoleConstants.SUPERADMIN, RoleConstants.SUPPORT, RoleConstants.ADMIN, RoleConstants.INVENTORY_MANAGER )
 //
                     .anyRequest().authenticated().and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

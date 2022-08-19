@@ -22,19 +22,27 @@ public class DesignationServiceImpl implements DesignationService{
     private DesignationRepo designationRepo;
     @Autowired
     private OrganizationRepo organizationRepo;
+    @Autowired
+    private PrincipalService principalService;
 
     @Override
     public ResponseEntity<DesignationsDto> getAllDesignation(Long orgId) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         return new ResponseEntity<>(new DesignationsDto(designationRepo.findAll(orgId)), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<DesignationDto> getDesignation(Long orgId, Long desId) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         return new ResponseEntity<>(new DesignationDto(designationRepo.findById(orgId, desId).orElseThrow(()->new EntityNotFoundException("Designation not found"))), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<CreatedDto> createDesignation(Long orgId, CreateDesignationDto desDto) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         Designation newDep = new Designation();
         newDep.setDesignationName(desDto.getName());
         newDep.setOrganization(
@@ -46,6 +54,8 @@ public class DesignationServiceImpl implements DesignationService{
 
     @Override
     public ResponseEntity<UpdatedDto> updateDesignation(Long orgId, UpdateDesignationDto desDto, Long desId) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         Designation subjectDep = designationRepo.findById(orgId, desId).orElseThrow(()->new EntityNotFoundException("Designation not found"));
         subjectDep.setDesignationName(desDto.getName());
         designationRepo.save(subjectDep);
@@ -54,6 +64,8 @@ public class DesignationServiceImpl implements DesignationService{
 
     @Override
     public ResponseEntity<DeletedDto> deleteDesignation(Long orgId, Long desId) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         if(designationRepo.existsById(orgId, desId)) designationRepo.deleteById(desId);
         else throw new EntityNotFoundException("Department not found");
         return new ResponseEntity<>(new DeletedDto("Department deleted successfully", desId.toString()), HttpStatus.ACCEPTED);
@@ -61,6 +73,8 @@ public class DesignationServiceImpl implements DesignationService{
 
     @Override
     public ResponseEntity<DesignationsDto> filterDesignation(String searchText, Long orgId) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         return new ResponseEntity<>(new DesignationsDto(designationRepo.filter(orgId, searchText)), HttpStatus.OK);
     }
 }

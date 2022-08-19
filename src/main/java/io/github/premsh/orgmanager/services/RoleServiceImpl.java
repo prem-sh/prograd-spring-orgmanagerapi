@@ -16,6 +16,7 @@ public class RoleServiceImpl implements RoleService{
     private RoleRepo roleRepo;
     @Override
     public ResponseEntity<RolesDto> getAllRoles() {
+
         return new ResponseEntity<RolesDto>(new RolesDto(roleRepo.findAll()), HttpStatus.OK);
     }
 

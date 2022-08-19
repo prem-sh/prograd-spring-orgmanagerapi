@@ -1,5 +1,6 @@
 package io.github.premsh.orgmanager.services;
 
+import io.github.premsh.orgmanager.constants.RoleConstants;
 import io.github.premsh.orgmanager.dto.employee.EmployeeDto;
 import io.github.premsh.orgmanager.dto.employee.EmployeesDto;
 import io.github.premsh.orgmanager.dto.memberprofile.CreateMemberProfileDto;
@@ -10,7 +11,6 @@ import io.github.premsh.orgmanager.dto.response.CreatedDto;
 import io.github.premsh.orgmanager.dto.response.DeletedDto;
 import io.github.premsh.orgmanager.dto.response.UpdatedDto;
 import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityNotFoundException;
-import io.github.premsh.orgmanager.models.Employee;
 import io.github.premsh.orgmanager.models.MemberProfile;
 import io.github.premsh.orgmanager.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class MemberProfileServiceImpl implements MemberProfileService{
@@ -42,8 +43,9 @@ public class MemberProfileServiceImpl implements MemberProfileService{
 
     @Override
     public ResponseEntity<MemberProfilesDto> getAllMembers(Long orgId) {
-        System.out.println("Entry");
-        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        if (! principalService.hasAuthority(orgId, List.of(
+                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
+        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         return new ResponseEntity<>(
                 new MemberProfilesDto(memberProfileRepo.findAll(orgId)), HttpStatus.OK
         );
@@ -51,8 +53,9 @@ public class MemberProfileServiceImpl implements MemberProfileService{
 
     @Override
     public ResponseEntity<MemberProfileDto> getMemberById(Long orgId, Long memId) {
-        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-
+        if (! principalService.hasAuthority(orgId, List.of(
+                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
+        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         return new ResponseEntity<>(
                 new MemberProfileDto(memberProfileRepo.findById(orgId, memId).orElseThrow(()->new EntityNotFoundException("Member not found"))), HttpStatus.OK
         );
@@ -60,8 +63,9 @@ public class MemberProfileServiceImpl implements MemberProfileService{
 
     @Override
     public ResponseEntity<CreatedDto> createMembership(Long orgId, CreateMemberProfileDto dto) {
-        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-
+        if (! principalService.hasAuthority(orgId, List.of(
+                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
+        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         MemberProfile member = new MemberProfile();
         member.setCreatedBy(principalService.getUser());
         member.setUpdatedBy(principalService.getUser());
@@ -86,8 +90,9 @@ public class MemberProfileServiceImpl implements MemberProfileService{
 
     @Override
     public ResponseEntity<UpdatedDto> updateMembership(Long orgId, UpdateMemberProfileDto dto, Long memId) {
-        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-
+        if (! principalService.hasAuthority(orgId, List.of(
+                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
+        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         MemberProfile member = memberProfileRepo.findById(orgId, memId).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
         member.setUpdatedBy(principalService.getUser());
         if (dto.getRole()!=null)member.setRole(roleRepo.findByRoleName(dto.getRole()).orElseThrow(()->new EntityNotFoundException("Role does not exist")));
@@ -109,8 +114,9 @@ public class MemberProfileServiceImpl implements MemberProfileService{
 
     @Override
     public ResponseEntity<DeletedDto> removeMember(Long orgId, Long memId) {
-        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-
+        if (! principalService.hasAuthority(orgId, List.of(
+                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
+        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         MemberProfile member = memberProfileRepo.findById(orgId, memId).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
         member.setDeletedBy(principalService.getUser());
         member.setDeletedAt(new Date());

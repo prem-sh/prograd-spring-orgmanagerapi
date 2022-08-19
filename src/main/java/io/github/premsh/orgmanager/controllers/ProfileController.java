@@ -2,6 +2,7 @@ package io.github.premsh.orgmanager.controllers;
 
 import io.github.premsh.orgmanager.dto.payroll.PayrollDto;
 import io.github.premsh.orgmanager.dto.profile.ProfileDto;
+import io.github.premsh.orgmanager.dto.response.DeletedDto;
 import io.github.premsh.orgmanager.dto.response.UpdatedDto;
 import io.github.premsh.orgmanager.dto.user.UpdateUserDto;
 import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityNotFoundException;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -45,4 +47,14 @@ public class ProfileController {
         userRepo.save(subjectUser);
         return new ResponseEntity<>(new UpdatedDto("Your details successfully"), HttpStatus.ACCEPTED);
     }
+    @DeleteMapping()
+    public ResponseEntity<DeletedDto> delete() {
+        User subjectUser = userRepo.findById(principalService.getUser().getId()).orElseThrow(()->new EntityNotFoundException("User with id %d does not exist"));
+        subjectUser.setIsDeleted(true);
+        subjectUser.setDeletedBy(principalService.getUser());
+        subjectUser.setDeletedAt(new Date());
+        userRepo.save(subjectUser);
+        return new ResponseEntity<>(new DeletedDto("Your profile deleted successfully"), HttpStatus.ACCEPTED);
+    }
+
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import io.github.premsh.orgmanager.dto.metadata.Metadata;
 import io.github.premsh.orgmanager.dto.organization.OrganizationCompactDto;
-import io.github.premsh.orgmanager.dto.tag.TagsDto;
+import io.github.premsh.orgmanager.dto.tag.SimpleTagsDto;
 import io.github.premsh.orgmanager.models.Asset;
 import lombok.Getter;
 
@@ -25,7 +25,7 @@ public class AssetDto {
     private final OrganizationCompactDto organization;
     private final Metadata metadata;
     @JacksonXmlProperty(localName = "Tags")
-    private final TagsDto tags;
+    private final SimpleTagsDto tags;
 
     public AssetDto(Asset asset) {
         this.assetId = asset.getId();
@@ -35,7 +35,7 @@ public class AssetDto {
         this.purchaseCost = asset.getPurchaseCost();
         this.currentValue = asset.getCurrentValue();
         this.organization = new OrganizationCompactDto(asset.getOrganization());
-        this.tags = new TagsDto(new ArrayList<>(asset.getTags()));
+        this.tags = new SimpleTagsDto(new ArrayList<>(asset.getTags()));
         this.metadata = new Metadata(
                 asset.getCreatedBy(),
                 asset.getCreatedAt(),

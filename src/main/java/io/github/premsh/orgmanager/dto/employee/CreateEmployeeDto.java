@@ -1,6 +1,7 @@
 package io.github.premsh.orgmanager.dto.employee;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import io.github.premsh.orgmanager.constants.RoleConstants;
 import io.github.premsh.orgmanager.constants.ValidationMessage;
 import io.github.premsh.orgmanager.models.User;
 import lombok.Data;
@@ -40,7 +41,7 @@ public class CreateEmployeeDto {
 
 
     @NotNull
-    private String role;
+    private String role = RoleConstants.EMPLOYEE;
 
     private String designation;
 

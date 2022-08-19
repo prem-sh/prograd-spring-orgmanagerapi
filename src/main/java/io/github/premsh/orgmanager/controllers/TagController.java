@@ -5,7 +5,7 @@ import io.github.premsh.orgmanager.dto.response.DeletedDto;
 import io.github.premsh.orgmanager.dto.response.UpdatedDto;
 import io.github.premsh.orgmanager.dto.tag.CreateTagDto;
 import io.github.premsh.orgmanager.dto.tag.TagDto;
-import io.github.premsh.orgmanager.dto.tag.TagsDto;
+import io.github.premsh.orgmanager.dto.tag.SimpleTagsDto;
 import io.github.premsh.orgmanager.dto.tag.UpdateTagDto;
 import io.github.premsh.orgmanager.services.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +26,12 @@ public class TagController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<TagsDto> getAllTags(@PathVariable Long orgId) {
+    public ResponseEntity<SimpleTagsDto> getAllTags(@PathVariable Long orgId) {
         return tagService.getAllTags(orgId);
     }
 
     @GetMapping("/filter/{searchText}")
-    public ResponseEntity<TagsDto> filterTags(@PathVariable Long orgId, @PathVariable String searchText) {
+    public ResponseEntity<SimpleTagsDto> filterTags(@PathVariable Long orgId, @PathVariable String searchText) {
         return tagService.filterTags(orgId, searchText);
     }
 
@@ -40,9 +40,9 @@ public class TagController {
         return tagService.createTag(orgId, dto);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<UpdatedDto> updateTag(@PathVariable Long orgId, @Valid @RequestBody UpdateTagDto dto, @PathVariable Long id) {
-        return tagService.updateTag(orgId, dto, id);
+    @PutMapping
+    public ResponseEntity<UpdatedDto> updateTag(@PathVariable Long orgId, @Valid @RequestBody UpdateTagDto dto) {
+        return tagService.updateTag(orgId, dto);
     }
 
     @DeleteMapping("/{id}")

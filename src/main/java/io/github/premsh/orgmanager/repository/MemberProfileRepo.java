@@ -31,7 +31,7 @@ public interface MemberProfileRepo extends JpaRepository<MemberProfile, Long> {
 
     @Query("""
             select m from MemberProfile m
-            where m.organization.id = ?1 and m.user.id = ?2 and m.role.roleName = ?3 and m.isDeleted = false""")
+            where m.organization.id = ?1 and id = ?2 and m.role.roleName = ?3 and m.isDeleted = false""")
     Optional<MemberProfile> findByOrgIdUserIdRoleId(long orgId, long userId, String roleName);
 
     @Query("""
@@ -41,7 +41,7 @@ public interface MemberProfileRepo extends JpaRepository<MemberProfile, Long> {
 
     @Query("""
             select m from MemberProfile m
-            where m.organization.id = ?1 and m.role.roleName = ?2 and m.organization.isDeleted = false""")
+            where m.organization.id = ?1 and m.role.roleName = ?2 and m.isDeleted = false""")
     List<MemberProfile> findByOrgIdRoleName(long orgId, String roleName);
 
     @Query("""

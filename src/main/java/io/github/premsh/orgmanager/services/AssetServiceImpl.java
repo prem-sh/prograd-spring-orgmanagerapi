@@ -1,5 +1,6 @@
 package io.github.premsh.orgmanager.services;
 
+import io.github.premsh.orgmanager.constants.RoleConstants;
 import io.github.premsh.orgmanager.dto.asset.AssetDto;
 import io.github.premsh.orgmanager.dto.asset.AssetsDto;
 import io.github.premsh.orgmanager.dto.asset.CreateAssetDto;
@@ -9,14 +10,19 @@ import io.github.premsh.orgmanager.dto.response.DeletedDto;
 import io.github.premsh.orgmanager.dto.response.UpdatedDto;
 import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityNotFoundException;
 import io.github.premsh.orgmanager.models.Asset;
+import io.github.premsh.orgmanager.models.Organization;
+import io.github.premsh.orgmanager.models.Tag;
+import io.github.premsh.orgmanager.models.User;
 import io.github.premsh.orgmanager.repository.AssetsRepo;
 import io.github.premsh.orgmanager.repository.OrganizationRepo;
+import io.github.premsh.orgmanager.repository.TagRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AssetServiceImpl implements AssetService{
@@ -26,8 +32,16 @@ public class AssetServiceImpl implements AssetService{
     private OrganizationRepo organizationRepo;
     @Autowired
     private PrincipalService principalService;
+    @Autowired
+    private TagService tagService;
+    @Autowired
+    private TagRepo tagRepo;
     @Override
     public ResponseEntity<AssetDto> getAssetById(Long orgId, Long id) {
+        if (! principalService.hasAuthority(orgId, List.of(
+                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
+        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         return new ResponseEntity<>(
                 new AssetDto(assetsRepo.findById(orgId, id).orElseThrow(()-> new EntityNotFoundException("Asset not found"))),
                 HttpStatus.OK
@@ -36,14 +50,22 @@ public class AssetServiceImpl implements AssetService{
 
     @Override
     public ResponseEntity<AssetsDto> getAllAssets(Long orgId) {
+        if (! principalService.hasAuthority(orgId, List.of(
+                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
+        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         return new ResponseEntity<>(
-                new AssetsDto(assetsRepo.findAll()),
+                new AssetsDto(assetsRepo.findAll(orgId)),
                 HttpStatus.OK
         );
     }
 
     @Override
     public ResponseEntity<AssetsDto> filterAssets(Long orgId, String searchText) {
+        if (! principalService.hasAuthority(orgId, List.of(
+                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
+        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         return new ResponseEntity<>(
                 new AssetsDto(assetsRepo.filter(searchText)),
                 HttpStatus.OK
@@ -52,20 +74,40 @@ public class AssetServiceImpl implements AssetService{
 
     @Override
     public ResponseEntity<CreatedDto> createAsset(Long orgId, CreateAssetDto dto) {
+        if (! principalService.hasAuthority(orgId, List.of(
+                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
+        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
+        User usr = principalService.getUser();
+        Organization org = organizationRepo.findById(orgId).orElseThrow(()->new EntityNotFoundException("Organization not found"));
         Asset a = new Asset();
         a.setName(dto.getName());
-        a.setOrganization(organizationRepo.findById(orgId).orElseThrow(()->new EntityNotFoundException("Organization not found")));
+        a.setOrganization(org);
         a.setCount(dto.getCount());
         a.setPurchaseCost(dto.getPurchaseCost());
         a.setCurrentValue(dto.getCurrentValue());
-        a.setCreatedBy(principalService.getUser());
-        a.setUpdatedBy(principalService.getUser());
+        a.setCreatedBy(usr);
+        a.setUpdatedBy(usr);
+        if(dto.getTags() != null) {
+            Set<Tag> tags = dto.getTags().stream().map(
+                    t -> tagService.facilitateTag(orgId, t, usr, org)
+            ).collect(Collectors.toSet());
+            a.setTags(tags);
+        }
         Asset newasset = assetsRepo.save(a);
+
         return new ResponseEntity<>(new CreatedDto("Asset created successfully",String.valueOf(newasset.getId())), HttpStatus.CREATED);
     }
 
     @Override
     public ResponseEntity<UpdatedDto> updateAsset(Long orgId, UpdateAssetDto dto, Long id) {
+        if (! principalService.hasAuthority(orgId, List.of(
+                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
+        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
+        User usr = principalService.getUser();
+        Organization org = organizationRepo.findById(orgId).orElseThrow(()->new EntityNotFoundException("Organization not found"));
+
         if (!assetsRepo.existsById(orgId, id)) throw new EntityNotFoundException("Asset not found");
         Asset a = assetsRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Asset not found"));
         if(dto.getName()!=null) a.setName(dto.getName());
@@ -73,12 +115,41 @@ public class AssetServiceImpl implements AssetService{
         if(dto.getPurchaseCost()!=null) a.setPurchaseCost(dto.getPurchaseCost());
         if(dto.getCurrentValue()!=null) a.setCurrentValue(dto.getCurrentValue());
         a.setUpdatedBy(principalService.getUser());
+        if(dto.getTags() != null) {
+            Set<Tag> tags = dto.getTags().stream().map(
+                    t -> tagService.facilitateTag(orgId, t, usr, org)
+            ).collect(Collectors.toSet());
+            a.setTags(tags);
+        }
+        if(dto.getRemoveTags() != null) {
+            Set<Tag> removeTags = dto.getRemoveTags().stream().map(
+                    t -> tagRepo.findByName(orgId, t).orElseThrow(()->new EntityNotFoundException("Tag : %s not found".formatted(t)))
+            ).collect(Collectors.toSet());
+            Set<Tag> tags = a.getTags().stream().filter(t->{
+                if(removeTags.contains(t)) {
+                    return false;
+                }
+                else return true;
+            }).collect(Collectors.toSet());
+            a.setTags(tags);
+        }
+        if(dto.getAddTags() != null) {
+            Set<Tag> tags = dto.getAddTags().stream().map(
+                    t -> tagService.facilitateTag(orgId, t, usr, org)
+            ).collect(Collectors.toSet());
+            tags.addAll(a.getTags());
+            a.setTags(tags);
+        }
         assetsRepo.save(a);
         return new ResponseEntity<>(new UpdatedDto("Asset Updated successfully",String.valueOf(a.getId())), HttpStatus.CREATED);
     }
 
     @Override
     public ResponseEntity<DeletedDto> deleteAsset(Long orgId, Long id) {
+        if (! principalService.hasAuthority(orgId, List.of(
+                RoleConstants.ADMIN
+        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         if (!assetsRepo.existsById(orgId, id)) throw new EntityNotFoundException("Asset not found");
         Asset a = assetsRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Asset not found"));
         a.setIsDeleted(true);

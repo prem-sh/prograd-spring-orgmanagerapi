@@ -32,16 +32,22 @@ public class DepartmentServiceImpl implements DepartmentService{
 
     @Override
     public ResponseEntity<DepartmentsDto> getAllDepartment(Long orgId) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         return new ResponseEntity<>(new DepartmentsDto(departmentRepo.findAll(orgId)), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<DepartmentDto> getDepartment(Long orgId, Long depId) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         return new ResponseEntity<>(new DepartmentDto(departmentRepo.findById(orgId, depId).orElseThrow(()->new EntityNotFoundException("Department not found"))), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<CreatedDto> createDepartment(Long orgId, CreateDepartmentDto depDto) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         Department newDep = new Department();
         newDep.setDepartmentName(depDto.getName());
         newDep.setOrganization(
@@ -57,6 +63,8 @@ public class DepartmentServiceImpl implements DepartmentService{
 
     @Override
     public ResponseEntity<UpdatedDto> updateDepartment(Long orgId, UpdateDepartmentDto depDto, Long depId) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         Department subjectDep = departmentRepo.findById(orgId, depId).orElseThrow(()->new EntityNotFoundException("Department not found"));
         subjectDep.setDepartmentName(depDto.getName());
         subjectDep.setUpdatedBy(principalService.getUser());
@@ -66,6 +74,8 @@ public class DepartmentServiceImpl implements DepartmentService{
 
     @Override
     public ResponseEntity<DeletedDto> deleteDepartment(Long orgId, Long depId) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         Department subjectDep = departmentRepo.findById(orgId, depId).orElseThrow(()->new EntityNotFoundException("Department not found"));
         subjectDep.setIsDeleted(true);
         subjectDep.setDeletedBy(principalService.getUser());
@@ -76,6 +86,8 @@ public class DepartmentServiceImpl implements DepartmentService{
 
     @Override
     public ResponseEntity<DepartmentsDto> filterDepartment(String searchText, Long orgId) {
+        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         return new ResponseEntity<>(new DepartmentsDto(departmentRepo.filter(orgId, searchText)), HttpStatus.OK);
     }
 }

@@ -1,5 +1,6 @@
 package io.github.premsh.orgmanager.dto.memberprofile;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import io.github.premsh.orgmanager.dto.department.DepartmentDto;
@@ -11,12 +12,12 @@ import io.github.premsh.orgmanager.dto.payroll.PayrollDto;
 import io.github.premsh.orgmanager.dto.role.RoleDto;
 import io.github.premsh.orgmanager.dto.user.UserCompactDto;
 import io.github.premsh.orgmanager.dto.user.UserDto;
-import io.github.premsh.orgmanager.models.Employee;
 import io.github.premsh.orgmanager.models.MemberProfile;
 import lombok.Getter;
 
 
 @Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JacksonXmlRootElement(localName = "MemberProfile")
 public class MemberProfileDto {
 
