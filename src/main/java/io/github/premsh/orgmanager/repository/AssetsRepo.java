@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface AssetsRepo extends JpaRepository<Asset, Long> {
@@ -24,4 +25,8 @@ public interface AssetsRepo extends JpaRepository<Asset, Long> {
     @Query("select a from Asset a where upper(a.name) like upper(concat('%', ?1,'%'))")
     List<Asset> filter(String name);
 
+    @Query("select a from Asset a inner join a.tags tags where a.organization.id = ?1 and tags.id = ?2")
+    Set<Asset> findAllByTag(long orgId, long tagId);
+
+    
 }

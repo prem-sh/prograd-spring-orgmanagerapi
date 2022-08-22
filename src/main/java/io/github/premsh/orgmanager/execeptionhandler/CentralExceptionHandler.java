@@ -2,6 +2,7 @@ package io.github.premsh.orgmanager.execeptionhandler;
 
 import io.github.premsh.orgmanager.dto.response.ErrorDto;
 import io.github.premsh.orgmanager.dto.response.ValidationErrorDto;
+import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityAlreadyExistException;
 import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityNotFoundException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
@@ -117,6 +118,11 @@ public class CentralExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     protected ResponseEntity<ErrorDto> handleEntityNotFound(EntityNotFoundException exep){
         return new ResponseEntity<>(new ErrorDto(HttpStatus.NOT_FOUND, exep.getMessage(), exep),HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(EntityAlreadyExistException.class)
+    protected ResponseEntity<ErrorDto> handleEntityAlreadyExistException(EntityAlreadyExistException exep){
+        return new ResponseEntity<>(new ErrorDto(HttpStatus.NOT_FOUND, exep.getMessage(), exep),HttpStatus.NOT_ACCEPTABLE);
     }
 
     @ExceptionHandler(ValidationException.class)

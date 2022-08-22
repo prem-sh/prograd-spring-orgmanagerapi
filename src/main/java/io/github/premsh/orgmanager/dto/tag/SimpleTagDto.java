@@ -11,14 +11,12 @@ import lombok.Data;
 public class SimpleTagDto {
     @JacksonXmlProperty(isAttribute = true)
     private final Long tagId;
-    @JacksonXmlProperty(isAttribute = true)
-    private final Boolean deleted;
+
     @JacksonXmlText
     private final String tagname;
 
     public SimpleTagDto(Tag tag) {
         this.tagId = tag.getId();
-        this.deleted = tag.getIsDeleted();
-        this.tagname = tag.getTag();
+        this.tagname = tag.getTagName();
     }
 }

@@ -34,5 +34,11 @@ public interface UserRepo extends JpaRepository<User, Long> {
     @Query("select u from User u where upper(u.address) like upper(?1) and u.isDeleted = false")
     List<User> filterByAddress(String address);
 
+    @Query("select (count(u) > 0) from User u where upper(u.email) like upper(?1)")
+    boolean existsByEmail(String email);
+
+    @Query("select (count(u) > 0) from User u where u.phone = ?1")
+    boolean existsByPhone(String phone);
+
 
 }

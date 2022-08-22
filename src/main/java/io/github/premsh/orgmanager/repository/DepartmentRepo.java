@@ -13,7 +13,7 @@ public interface DepartmentRepo  extends JpaRepository<Department, Long>{
     @Query("select d from Department d where d.organization.id = ?1 and d.isDeleted = false")
     List<Department> findAll(long id);
 
-    @Query("select d from Department d where d.organization.id = ?1 and d.id = ?2")
+    @Query("select d from Department d where d.organization.id = ?1 and d.id = ?2 and d.isDeleted = false")
     Optional<Department> findById(long id, long id1);
 
     @Query("select (count(d) > 0) from Department d where d.organization.id = ?1 and d.id = ?2 and d.isDeleted = false")
@@ -26,6 +26,11 @@ public interface DepartmentRepo  extends JpaRepository<Department, Long>{
             select d from Department d
             where d.organization.id = ?1 and d.departmentName = ?2 and d.organization.isDeleted = false""")
     Optional<Department> findByName(long id, String departmentName);
+
+    @Query("""
+            select (count(d) > 0) from Department d
+            where d.organization.id = ?1 and upper(d.departmentName) like upper(?2)""")
+    boolean existsByDepartmentName(long id, String departmentName);
 
 
     

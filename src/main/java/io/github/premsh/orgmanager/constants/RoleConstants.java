@@ -6,7 +6,5 @@ public class RoleConstants {
     public static final String ADMIN = "ADMIN";
     public static final String EMPLOYEE_MANAGER = "EMPLOYEE_MANAGER";
     public static final String INVENTORY_MANAGER = "INVENTORY_MANAGER";
-    public static final String EMPLOYEE_ATTENDANCE_MANAGER = "EMPLOYEE_ATTENDANCE_MANAGER";
-    public static final String EMPLOYEE_PAYROLL_MANAGER = "EMPLOYEE_PAYROLL_MANAGER";
     public static final String EMPLOYEE = "EMPLOYEE";
 }

@@ -2,7 +2,9 @@ package io.github.premsh.orgmanager.repository;
 
 import io.github.premsh.orgmanager.models.MemberProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,9 +27,6 @@ public interface MemberProfileRepo extends JpaRepository<MemberProfile, Long> {
 
     @Query("select m from MemberProfile m where m.organization.id = ?1 and m.user.id = ?2 and m.isDeleted = false")
     Optional<MemberProfile> findByOrgIdUserId(long orgId, long usrId);
-
-    @Query("select (count(m) > 0) from MemberProfile m where m.user.id = ?1 and m.id = ?2 and m.isDeleted = false")
-    boolean existsByUserId(long id, Long id1);
 
     @Query("""
             select m from MemberProfile m
@@ -66,5 +65,27 @@ public interface MemberProfileRepo extends JpaRepository<MemberProfile, Long> {
 
     @Query("select m from MemberProfile m where m.organization.id = ?1 and upper(m.user.email) like upper(concat('%', ?2,'%')) and m.isDeleted = false")
     List<MemberProfile> filterEmail(long id, String email);
+
+    @Query("""
+            select m from MemberProfile m
+            where m.organization.id = ?1 and upper(m.department.departmentName) like upper(?2) and m.isDeleted = false""")
+    List<MemberProfile> findMemberByDepartmentName(long id, String departmentName);
+
+    @Query("""
+            select m from MemberProfile m
+            where m.organization.id = ?1 and upper(m.designation.designationName) like upper(?2) and m.isDeleted = false""")
+    List<MemberProfile> findMemberByDesignationName(long id, String designationName);
+
+    @Query("""
+            select m from MemberProfile m
+            where m.organization.id = ?1 and upper(m.role.roleName) like upper(?2) and m.isDeleted = false""")
+    List<MemberProfile> findMemberByRoleName(long id, String roleName);
+
+    @Override
+    @Transactional
+    @Modifying
+    @Query("delete from MemberProfile m where m.id = ?1")
+    void deleteById(Long id);
+
 
 }

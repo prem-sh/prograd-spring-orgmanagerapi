@@ -18,20 +18,22 @@ public class Metadata {
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private static class Action{
-        UserCompactDto by = null;
+        @JacksonXmlProperty(isAttribute = true)
+        Long by = null;
+        @JacksonXmlProperty(isAttribute = true)
         Date at = null;
     }
 
-    private final Action creation = new Action();
-    private final Action updation = new Action();
-    private final Action deletion = new Action();
+    private final Action created = new Action();
+    private final Action updated = new Action();
+    private final Action deleted = new Action();
 
-    public Metadata(User createdBy, Date createdAt, User updatedBy, Date updatedAt, User deletedBy, Date deletedAt) {
-        if(createdBy != null) creation.setBy(new UserCompactDto(createdBy));
-        if(createdAt != null) creation.setAt(createdAt);
-        if(updatedBy != null) updation.setBy(new UserCompactDto(updatedBy));
-        if(updatedAt != null) updation.setAt(updatedAt);
-        if(deletedBy != null) deletion.setBy(new UserCompactDto(deletedBy));
-        if(deletedAt != null) deletion.setAt(deletedAt);
+    public Metadata(Long createdBy, Date createdAt, Long updatedBy, Date updatedAt, Long deletedBy, Date deletedAt) {
+        if(createdBy != null) created.setBy(createdBy);
+        if(createdAt != null) created.setAt(createdAt);
+        if(updatedBy != null) updated.setBy(updatedBy);
+        if(updatedAt != null) updated.setAt(updatedAt);
+        if(deletedBy != null) deleted.setBy(deletedBy);
+        if(deletedAt != null) deleted.setAt(deletedAt);
     }
 }

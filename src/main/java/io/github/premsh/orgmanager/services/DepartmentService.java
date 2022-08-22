@@ -7,6 +7,8 @@ import io.github.premsh.orgmanager.dto.department.UpdateDepartmentDto;
 import io.github.premsh.orgmanager.dto.response.CreatedDto;
 import io.github.premsh.orgmanager.dto.response.DeletedDto;
 import io.github.premsh.orgmanager.dto.response.UpdatedDto;
+import io.github.premsh.orgmanager.models.Department;
+import io.github.premsh.orgmanager.models.Organization;
 import org.springframework.http.ResponseEntity;
 
 public interface DepartmentService {
@@ -16,4 +18,6 @@ public interface DepartmentService {
     ResponseEntity<UpdatedDto> updateDepartment(Long orgId, UpdateDepartmentDto depDto, Long depId);
     ResponseEntity<DeletedDto> deleteDepartment(Long orgId, Long depId);
     ResponseEntity<DepartmentsDto> filterDepartment(String searchText, Long orgId);
+
+    Department createDefaultDepartment(Organization org);
 }

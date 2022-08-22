@@ -1,8 +1,8 @@
 package io.github.premsh.orgmanager.services;
 
-import io.github.premsh.orgmanager.constants.RoleConstants;
-import io.github.premsh.orgmanager.dto.employee.EmployeeDto;
-import io.github.premsh.orgmanager.dto.employee.EmployeesDto;
+import io.github.premsh.orgmanager.constants.Defaults;
+import io.github.premsh.orgmanager.constants.Permissions;
+import io.github.premsh.orgmanager.dto.AuthDto;
 import io.github.premsh.orgmanager.dto.memberprofile.CreateMemberProfileDto;
 import io.github.premsh.orgmanager.dto.memberprofile.MemberProfileDto;
 import io.github.premsh.orgmanager.dto.memberprofile.MemberProfilesDto;
@@ -17,9 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
-import java.util.List;
 
 @Service
 public class MemberProfileServiceImpl implements MemberProfileService{
@@ -43,9 +40,9 @@ public class MemberProfileServiceImpl implements MemberProfileService{
 
     @Override
     public ResponseEntity<MemberProfilesDto> getAllMembers(Long orgId) {
-        if (! principalService.hasAuthority(orgId, List.of(
-                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
-        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.MEMBER_READ);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         return new ResponseEntity<>(
                 new MemberProfilesDto(memberProfileRepo.findAll(orgId)), HttpStatus.OK
         );
@@ -53,9 +50,9 @@ public class MemberProfileServiceImpl implements MemberProfileService{
 
     @Override
     public ResponseEntity<MemberProfileDto> getMemberById(Long orgId, Long memId) {
-        if (! principalService.hasAuthority(orgId, List.of(
-                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
-        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.MEMBER_READ);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         return new ResponseEntity<>(
                 new MemberProfileDto(memberProfileRepo.findById(orgId, memId).orElseThrow(()->new EntityNotFoundException("Member not found"))), HttpStatus.OK
         );
@@ -63,21 +60,31 @@ public class MemberProfileServiceImpl implements MemberProfileService{
 
     @Override
     public ResponseEntity<CreatedDto> createMembership(Long orgId, CreateMemberProfileDto dto) {
-        if (! principalService.hasAuthority(orgId, List.of(
-                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
-        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.MEMBER_CREATE);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
+
         MemberProfile member = new MemberProfile();
-        member.setCreatedBy(principalService.getUser());
-        member.setUpdatedBy(principalService.getUser());
+        member.setCreatedBy(auth.getUserId());
+        member.setUpdatedBy(auth.getUserId());
         member.setOrganization(organizationRepo.findById(orgId).orElseThrow(()->new EntityNotFoundException("Organization not found")));
         member.setUser(userRepo.findByEmail(dto.getEmail()).orElseThrow(()->new EntityNotFoundException("User not found")));
         member.setRole(roleRepo.findByRoleName(dto.getRole()).orElseThrow(()->new EntityNotFoundException("Role does not exist")));
+
         if (dto.getDesignation()!=null) member.setDesignation(designationRepo.findByName(orgId, dto.getDesignation()).orElseThrow(
                 ()->new EntityNotFoundException("Designation not found")
         ));
+        else member.setDesignation(designationRepo.findByName(orgId, Defaults.DEFAULT_DESIGNATION).orElseThrow(
+                ()->new EntityNotFoundException("Default Designation not found, please create new Designation with name '%s'".formatted(Defaults.DEFAULT_DESIGNATION))
+        ));
+
         if (dto.getDepartment()!=null) member.setDepartment(departmentRepo.findByName(orgId, dto.getDepartment()).orElseThrow(
                 ()->new EntityNotFoundException("Department not found")
         ));
+        else member.setDepartment(departmentRepo.findByName(orgId, Defaults.DEFAULT_DEPARTMENT).orElseThrow(
+                ()->new EntityNotFoundException("Default Department not found, please create new Department with name '%s'".formatted(Defaults.DEFAULT_DEPARTMENT))
+        ));
+
         if (dto.getPayrollId()!=null) member.setPayroll(payrollRepo.findById(orgId, dto.getPayrollId()).orElseThrow(
                 ()->new EntityNotFoundException("Payroll profile not found")
         ));
@@ -90,11 +97,12 @@ public class MemberProfileServiceImpl implements MemberProfileService{
 
     @Override
     public ResponseEntity<UpdatedDto> updateMembership(Long orgId, UpdateMemberProfileDto dto, Long memId) {
-        if (! principalService.hasAuthority(orgId, List.of(
-                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
-        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.MEMBER_UPDATE);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
+
         MemberProfile member = memberProfileRepo.findById(orgId, memId).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
-        member.setUpdatedBy(principalService.getUser());
+        member.setUpdatedBy(auth.getUserId());
         if (dto.getRole()!=null)member.setRole(roleRepo.findByRoleName(dto.getRole()).orElseThrow(()->new EntityNotFoundException("Role does not exist")));
         if (dto.getDesignation()!=null) member.setDesignation(designationRepo.findByName(orgId, dto.getDesignation()).orElseThrow(
                 ()->new EntityNotFoundException("Designation not found")
@@ -114,14 +122,14 @@ public class MemberProfileServiceImpl implements MemberProfileService{
 
     @Override
     public ResponseEntity<DeletedDto> removeMember(Long orgId, Long memId) {
-        if (! principalService.hasAuthority(orgId, List.of(
-                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
-        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.MEMBER_DELETE);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         MemberProfile member = memberProfileRepo.findById(orgId, memId).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
-        member.setDeletedBy(principalService.getUser());
-        member.setDeletedAt(new Date());
-        member.setIsDeleted(true);
-        memberProfileRepo.save(member);
+        System.out.println("Method Entry");
+        memberProfileRepo.deleteById(member.getId());
+        System.out.println("Method Exit");
+
         return new ResponseEntity<>(new DeletedDto("Member profile Deleted successfully",String.valueOf(member.getId())), HttpStatus.ACCEPTED);
     }
 

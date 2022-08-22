@@ -38,20 +38,20 @@ public class ProfileController {
         List<MemberProfile> memberships = memberProfileRepo.findByUserId(user.getId());
         return new ResponseEntity<>(new ProfileDto(user, memberships), HttpStatus.OK);
     }
-    @PostMapping()
+    @PutMapping()
     public ResponseEntity<UpdatedDto> updateProfile(@Valid @RequestBody UpdateUserDto dto) {
         User subjectUser = userRepo.findById(principalService.getUser().getId()).orElseThrow(()->new EntityNotFoundException("User with id %d does not exist"));
         dto.get(subjectUser);
         subjectUser.setPassword(passwordEncoder.encode(subjectUser.getPassword()));
-        subjectUser.setUpdatedBy(principalService.getUser());
+        subjectUser.setUpdatedBy(subjectUser.getId());
         userRepo.save(subjectUser);
-        return new ResponseEntity<>(new UpdatedDto("Your details successfully"), HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(new UpdatedDto("Your details successfully updated"), HttpStatus.ACCEPTED);
     }
     @DeleteMapping()
     public ResponseEntity<DeletedDto> delete() {
         User subjectUser = userRepo.findById(principalService.getUser().getId()).orElseThrow(()->new EntityNotFoundException("User with id %d does not exist"));
         subjectUser.setIsDeleted(true);
-        subjectUser.setDeletedBy(principalService.getUser());
+        subjectUser.setDeletedBy(subjectUser.getId());
         subjectUser.setDeletedAt(new Date());
         userRepo.save(subjectUser);
         return new ResponseEntity<>(new DeletedDto("Your profile deleted successfully"), HttpStatus.ACCEPTED);

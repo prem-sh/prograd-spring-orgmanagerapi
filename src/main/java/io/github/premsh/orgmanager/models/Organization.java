@@ -1,19 +1,21 @@
 package io.github.premsh.orgmanager.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.github.premsh.orgmanager.constants.ValidationMessage;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.validator.constraints.URL;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @Entity
-@Table(name="organization")
+@Table(name = "organization")
+
 public class Organization {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +27,6 @@ public class Organization {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
-
     @URL
     @Column(name = "website")
     private String website;
@@ -36,13 +37,27 @@ public class Organization {
     @NotNull
     @Size(max = 15, message = ValidationMessage.PHONE_LENGTH_CONSTRAINT)
     @Pattern(regexp = "^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$", message = ValidationMessage.PHONE_PATTERN_CONSTRAINT )
-    @Column(name = "phone", length = 15, nullable = false)
+    @Column(name = "phone", length = 15, nullable = false, unique = true)
     private String phone;
 
     @Email
     @NotNull
-    @Column(name = "email", length = 50, nullable = false)
+    @Column(name = "email", length = 50, nullable = false, unique = true)
     private String email;
+
+    @Column(name = "created_at", updatable = false, nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
+
+    @Column(name = "created_by", updatable = false, nullable = false)
+    private Long createdBy;
+
+    @Column(name = "updated_at", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedAt;
+
+    @Column(name = "updated_by", nullable = false)
+    private Long updatedBy;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
@@ -51,25 +66,45 @@ public class Organization {
     @Temporal(TemporalType.TIMESTAMP)
     private Date deletedAt;
 
-    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "deleted_by", referencedColumnName = "id")
-    private User deletedBy;
+    @Column(name = "deleted_by")
+    private Long deletedBy;
 
-    @Column(name = "created_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    //----------Associations--------------
+    @JsonManagedReference
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL)
+    private List<Asset> assets;
 
-    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "created_by", referencedColumnName = "id")
-    private User createdBy;
+    @JsonManagedReference
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL)
+    private List<Department> departments;
 
-    @Column(name = "updated_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
+    @JsonManagedReference
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL)
+    private List<Designation> designations;
 
-    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "updated_by", referencedColumnName = "id")
-    private User updatedBy;
+    @JsonManagedReference
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL)
+    private List<MemberProfile> memberProfiles;
+    public void removeMember(MemberProfile memberProfile){
+        this.memberProfiles.remove(memberProfile);
+        memberProfile.setOrganization(null);
+    }
+
+    @JsonManagedReference
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL)
+    private List<Payroll> payrolls;
+
+    @JsonManagedReference
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL)
+    private List<Tag> tags;
+
+    //-=----------------------
 
     @PrePersist
     private void onCreate(){
@@ -80,5 +115,4 @@ public class Organization {
     private void onUpdate(){
         this.updatedAt = new Date();
     }
-
 }

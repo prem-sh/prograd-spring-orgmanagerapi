@@ -7,6 +7,7 @@ import io.github.premsh.orgmanager.dto.memberprofile.UpdateMemberProfileDto;
 import io.github.premsh.orgmanager.dto.response.CreatedDto;
 import io.github.premsh.orgmanager.dto.response.DeletedDto;
 import io.github.premsh.orgmanager.dto.response.UpdatedDto;
+import io.github.premsh.orgmanager.models.MemberProfile;
 import org.springframework.http.ResponseEntity;
 
 public interface MemberProfileService {

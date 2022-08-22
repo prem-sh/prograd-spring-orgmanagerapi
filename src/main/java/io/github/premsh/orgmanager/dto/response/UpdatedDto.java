@@ -16,4 +16,8 @@ public class UpdatedDto extends SuccessResponse{
     public UpdatedDto(String message, String entityId, String info) {
         super(HttpStatus.ACCEPTED,message, entityId, info);
     }
+
+    public UpdatedDto(HttpStatus status, String message) {
+        super(status, message);
+    }
 }

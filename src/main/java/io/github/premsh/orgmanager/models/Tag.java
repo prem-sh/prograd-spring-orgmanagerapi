@@ -1,21 +1,47 @@
 package io.github.premsh.orgmanager.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.Set;
 
 @Data
 @Entity
-@Table(name="tag")
+@Table(
+        name="tag",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"tag_name", "organization_id"})
+)
 public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long id;
+    private long id;
+
+    @NotNull
     @Column(name = "tag_name")
-    String tag;
-    @ManyToOne(targetEntity = Organization.class, fetch = FetchType.EAGER)
+    private String tagName;
+
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "organization_id")
     private Organization organization;
+
+    @Column(name = "created_at", updatable = false, nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
+
+    @Column(name = "created_by", updatable = false, nullable = false)
+    private Long createdBy;
+
+    @Column(name = "updated_at", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedAt;
+
+    @Column(name = "updated_by", nullable = false)
+    private Long updatedBy;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
@@ -24,25 +50,8 @@ public class Tag {
     @Temporal(TemporalType.TIMESTAMP)
     private Date deletedAt;
 
-    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "deleted_by", referencedColumnName = "id")
-    private User deletedBy;
-
-    @Column(name = "created_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
-
-    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "created_by", referencedColumnName = "id")
-    private User createdBy;
-
-    @Column(name = "updated_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
-
-    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "updated_by", referencedColumnName = "id")
-    private User updatedBy;
+    @Column(name = "deleted_by")
+    private Long deletedBy;
 
     @PrePersist
     private void onCreate(){

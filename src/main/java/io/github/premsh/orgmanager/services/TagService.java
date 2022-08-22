@@ -22,7 +22,7 @@ public interface TagService {
     ResponseEntity<CreatedDto> createTag(Long orgId, CreateTagDto dto);
     ResponseEntity<UpdatedDto> updateTag(Long orgId, UpdateTagDto dto);
     ResponseEntity<DeletedDto> deleteTag(Long orgId, Long id);
-    List<Long> bulkAddTags(Long orgId, Set<String> tags);
-    List<Long> bulkUpdateTags(Long orgId, List<String> from, List<String> to);
-    Tag facilitateTag(Long orgId, String name, User usr, Organization org);
+    List<Long> bulkAddTags(Long orgId, Set<String> tags, Long createdBy);
+    List<Long> bulkUpdateTags(Long orgId, List<String> from, List<String> to, Long updatedBy);
+    Tag facilitateTag(Long orgId, String name, Long usrId, Organization org);
 }

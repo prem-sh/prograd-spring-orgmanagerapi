@@ -27,6 +27,11 @@ public interface DesignationRepo extends JpaRepository<Designation, Long> {
     @Query("select d from Designation d where d.organization.id = ?1 and d.designationName = ?2 and d.isDeleted = false")
     Optional<Designation> findByName(long id, String designationName);
 
+    @Query("""
+            select (count(d) > 0) from Designation d
+            where d.organization.id = ?1 and upper(d.designationName) like upper(?2)""")
+    boolean existsByDesignationName(long id, String designationName);
+
     
     
 

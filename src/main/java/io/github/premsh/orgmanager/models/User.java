@@ -1,13 +1,17 @@
 package io.github.premsh.orgmanager.models;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,10 +36,11 @@ public class User implements UserDetails {
     @Column(name = "address")
     private String address;
 
-    @Column(name = "phone", length = 15, nullable = false)
+    @Column(name = "phone", length = 15, nullable = false, unique = true)
     private String phone;
 
-    @Column(name = "email", nullable = false)
+    @Email
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "password", nullable = false)
@@ -44,6 +49,20 @@ public class User implements UserDetails {
     @Column(name = "enabled")
     private Boolean isEnabled = true;
 
+    @Column(name = "created_at", updatable = false, nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
+
+    @Column(name = "created_by", updatable = false, nullable = false)
+    private Long createdBy;
+
+    @Column(name = "updated_at", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedAt;
+
+    @Column(name = "updated_by", nullable = false)
+    private Long updatedBy;
+
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
@@ -51,25 +70,8 @@ public class User implements UserDetails {
     @Temporal(TemporalType.TIMESTAMP)
     private Date deletedAt;
 
-    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "deleted_by", referencedColumnName = "id")
-    private User deletedBy;
-
-    @Column(name = "created_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
-
-    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "created_by", referencedColumnName = "id")
-    private User createdBy;
-
-    @Column(name = "updated_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
-
-    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "updated_by", referencedColumnName = "id")
-    private User updatedBy;
+    @Column(name = "deleted_by")
+    private Long deletedBy;
 
     @PrePersist
     private void onCreate(){
@@ -106,15 +108,18 @@ public class User implements UserDetails {
         return this.isEnabled;
     }
 
-    @OneToMany(
-            mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,fetch = FetchType.EAGER
-    )
-    private Set<MemberProfile> memberProfile = new HashSet<>();
+    @JsonManagedReference
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "user")
+    private Set<MemberProfile> memberProfile;
+    public void removeMember(MemberProfile memberProfile){
+        this.memberProfile.remove(memberProfile);
+        memberProfile.setUser(null);
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        System.out.println("INSIDE");
         List<GrantedAuthority> authorities = memberProfile.stream().map((mem) -> new SimpleGrantedAuthority(mem.getRole().getRoleName())).collect(Collectors.toList());
         System.out.println(Arrays.toString(authorities.toArray()));
         return authorities;
@@ -126,19 +131,5 @@ public class User implements UserDetails {
         System.out.println(Arrays.toString(authorities.toArray()));
         return authorities;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User usr = (User) o;
-        return Objects.equals(id, usr.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, email);
-    }
-
 }
 

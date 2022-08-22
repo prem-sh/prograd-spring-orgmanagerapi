@@ -1,39 +1,71 @@
 package io.github.premsh.orgmanager.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
-import java.util.Objects;
+import java.util.List;
 
 @Data
 @Entity
-@Table(name = "member_profile")
+@Table(
+        name = "member_profile",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "organization_id", "role_id"})}
+)
 public class MemberProfile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonBackReference
     @NotNull
-    @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER)
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
+    public void removeUser(){
+        if(user!=null) user.removeMember(this);
+    }
 
     @NotNull
-    @ManyToOne(targetEntity = Organization.class, fetch = FetchType.EAGER)
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "organization_id")
     private Organization organization;
+    public void removeOrg(){
+        if(organization!=null) organization.removeMember(this);
+    }
 
     @NotNull
-    @ManyToOne(targetEntity = Role.class, fetch = FetchType.EAGER)
+    @ManyToOne
+    @JsonBackReference
+    @JoinColumn(name = "role_id", referencedColumnName = "id")
     private Role role;
 
-    @ManyToOne(targetEntity = Designation.class, fetch = FetchType.EAGER)
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "designation_id")
     private Designation designation;
+    public void removeDesignation(){
+        if(designation!=null) {
+            designation.removeMember(this);
+        }
+    }
 
-    @ManyToOne(targetEntity = Department.class, fetch = FetchType.EAGER)
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "department_id")
     private Department department;
+    public void removeDepartment(){
+        if(department!=null) {
+            department.removeMember(this);
+        }
+    }
 
-    @ManyToOne(targetEntity = Payroll.class, fetch = FetchType.EAGER)
+    @OneToOne
+    @JoinColumn(name = "salary_profile", referencedColumnName = "id")
     private Payroll payroll;
 
     @Column(name = "pan_number", length = 50)
@@ -45,6 +77,20 @@ public class MemberProfile {
     @Column(name = "ifsc", length = 50)
     private String ifsc;
 
+    @Column(name = "created_at", updatable = false, nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
+
+    @Column(name = "created_by", updatable = false, nullable = false)
+    private Long createdBy;
+
+    @Column(name = "updated_at", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedAt;
+
+    @Column(name = "updated_by", nullable = false)
+    private Long updatedBy;
+
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
@@ -52,25 +98,8 @@ public class MemberProfile {
     @Temporal(TemporalType.TIMESTAMP)
     private Date deletedAt;
 
-    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "deleted_by", referencedColumnName = "id")
-    private User deletedBy;
-
-    @Column(name = "created_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
-
-    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "created_by", referencedColumnName = "id")
-    private User createdBy;
-
-    @Column(name = "updated_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
-
-    @ManyToOne(targetEntity = User.class, cascade = CascadeType.ALL)
-    @JoinColumn(name = "updated_by", referencedColumnName = "id")
-    private User updatedBy;
+    @Column(name = "deleted_by")
+    private Long deletedBy;
 
     @PrePersist
     private void onCreate(){
@@ -80,22 +109,6 @@ public class MemberProfile {
     @PreUpdate
     private void onUpdate(){
         this.updatedAt = new Date();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-
-        if (o == null || getClass() != o.getClass())
-            return false;
-
-        MemberProfile that = (MemberProfile) o;
-        return Objects.equals(id, that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, user);
     }
 
 }

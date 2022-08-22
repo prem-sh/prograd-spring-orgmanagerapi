@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService{
@@ -87,17 +88,31 @@ public class EmployeeServiceImpl implements EmployeeService{
     public ResponseEntity<CreatedDto> createEmployee(Long orgId, CreateEmployeeDto dto) {
         if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
+        Long actionBy = principalService.getUser().getId();
+
         User newUser = dto.getUser();
-        newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
-        newUser.setCreatedBy(principalService.getUser());
-        newUser.setUpdatedBy(principalService.getUser());
-        User usr = userRepo.save(newUser);
+        Optional<User> optionalUser = userRepo.findByEmail(newUser.getEmail());
+        if(optionalUser.isPresent()){
+            newUser = optionalUser.get();
+        }else{
+            if(userRepo.existsByEmail(newUser.getEmail())){
+                return new ResponseEntity<>(new CreatedDto("User email already taken"), HttpStatus.NOT_ACCEPTABLE);
+            }
+            if(userRepo.existsByEmail(newUser.getPhone())){
+                return new ResponseEntity<>(new CreatedDto("User phone number already taken"), HttpStatus.NOT_ACCEPTABLE);
+            }
+            newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+            newUser.setCreatedBy(actionBy);
+            newUser.setUpdatedBy(actionBy);
+            newUser = userRepo.save(newUser);
+        }
+
 
         MemberProfile member = new MemberProfile();
-        member.setCreatedBy(principalService.getUser());
-        member.setUpdatedBy(principalService.getUser());
+        member.setCreatedBy(actionBy);
+        member.setUpdatedBy(actionBy);
         member.setOrganization(organizationRepo.findById(orgId).orElseThrow(()->new EntityNotFoundException("Organization not found")));
-        member.setUser(usr);
+        member.setUser(newUser);
         member.setRole(roleRepo.findByRoleName(dto.getRole()).orElseThrow(()->new EntityNotFoundException("Role does not exist")));
         if (dto.getDesignation()!=null) member.setDesignation(designationRepo.findByName(orgId, dto.getDesignation()).orElseThrow(
                 ()->new EntityNotFoundException("Designation not found")
@@ -122,7 +137,9 @@ public class EmployeeServiceImpl implements EmployeeService{
 
         MemberProfile member = memberProfileRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
 
-        member.setUpdatedBy(principalService.getUser());
+        Long actionBy = principalService.getUser().getId();
+
+        member.setUpdatedBy(actionBy);
         if (dto.getRole()!=null)member.setRole(roleRepo.findByRoleName(dto.getRole()).orElseThrow(()->new EntityNotFoundException("Role does not exist")));
         if (dto.getDesignation()!=null) member.setDesignation(designationRepo.findByName(orgId, dto.getDesignation()).orElseThrow(
                 ()->new EntityNotFoundException("Designation not found")
@@ -140,17 +157,32 @@ public class EmployeeServiceImpl implements EmployeeService{
 
         User subjectUser = userRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("User with id %d does not exist", id)));
         dto.getUser(subjectUser); //get updates from dto
-        subjectUser.setUpdatedBy(principalService.getUser());
+        subjectUser.setPassword(passwordEncoder.encode(subjectUser.getPassword()));
+        subjectUser.setUpdatedBy(actionBy);
         userRepo.save(subjectUser);
 
         return new ResponseEntity<>(new UpdatedDto("Employee updated successfully",String.valueOf(member.getId())), HttpStatus.ACCEPTED);
     }
 
+//    @Override
+//    public ResponseEntity<DeletedDto> deleteEmployee(Long orgId, Long id) {
+//
+//        MemberProfile member = memberProfileRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
+//        member.setDeletedBy(principalService.getUser());
+//        member.setDeletedAt(new Date());
+//        member.setIsDeleted(true);
+//        memberProfileRepo.save(member);
+//
+//        return new ResponseEntity<>(new DeletedDto("Employee deleted successfully",String.valueOf(member.getId())), HttpStatus.ACCEPTED);
+//    }
+
     @Override
     public ResponseEntity<DeletedDto> deleteEmployee(Long orgId, Long id) {
 
+        Long actionBy = principalService.getUser().getId();
+
         MemberProfile member = memberProfileRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
-        member.setDeletedBy(principalService.getUser());
+        member.setDeletedBy(actionBy);
         member.setDeletedAt(new Date());
         member.setIsDeleted(true);
         memberProfileRepo.save(member);

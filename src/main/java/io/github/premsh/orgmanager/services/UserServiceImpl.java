@@ -8,6 +8,7 @@ import io.github.premsh.orgmanager.dto.user.CreateUserDto;
 import io.github.premsh.orgmanager.dto.user.UpdateUserDto;
 import io.github.premsh.orgmanager.dto.user.UserDto;
 import io.github.premsh.orgmanager.dto.user.UsersDto;
+import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityAlreadyExistException;
 import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityNotFoundException;
 import io.github.premsh.orgmanager.models.User;
 import io.github.premsh.orgmanager.repository.UserRepo;
@@ -70,31 +71,42 @@ public class UserServiceImpl implements UserService{
     @Override
     public ResponseEntity<CreatedDto> createUser(CreateUserDto user) {
         User newUser = user.get();
+        if(userRepo.existsByEmail(user.getEmail())){
+            throw new EntityAlreadyExistException("User email already taken");
+        }
+        if(userRepo.existsByPhone(user.getPhone())){
+            throw new EntityAlreadyExistException("User phone number already taken");
+        }
+        Long actionBy = principalService.getUser().getId();
+
         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
-        newUser.setCreatedBy(principalService.getUser());
-        newUser.setUpdatedBy(principalService.getUser());
+        newUser.setCreatedBy(actionBy);
+        newUser.setUpdatedBy(actionBy);
         User usr = userRepo.save(newUser);
         return new ResponseEntity<>(new CreatedDto("New User Created Successfully",String.valueOf(usr.getId())), HttpStatus.CREATED);
     }
 
     @Override
     public ResponseEntity<UpdatedDto> updateUser(UpdateUserDto userDto, Long id) {
+
+        Long actionBy = principalService.getUser().getId();
+
         User subjectUser = userRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("User with id %d does not exist", id)));
         userDto.get(subjectUser); //get updates from dto
+
         subjectUser.setPassword(passwordEncoder.encode(subjectUser.getPassword()));
-        subjectUser.setUpdatedBy(principalService.getUser());
+        subjectUser.setUpdatedBy(actionBy);
         userRepo.save(subjectUser);
         return new ResponseEntity<>(new UpdatedDto("User updated successfully", id.toString()), HttpStatus.ACCEPTED);
     }
 
     @Override
     public ResponseEntity<DeletedDto> deleteUser(Long id) throws  EntityNotFoundException{
+        Long actionBy = principalService.getUser().getId();
+
         if (!userRepo.existsById(id)) throw new EntityNotFoundException("User not found");
         User subjectUser = userRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("User with id %d does not exist", id)));
-        subjectUser.setDeletedAt(new Date());
-        subjectUser.setDeletedBy(principalService.getUser());
-        subjectUser.setIsDeleted(true);
-        userRepo.save(subjectUser);
+        userRepo.delete(subjectUser);
         return new ResponseEntity<>(new DeletedDto("User Deleted successfully", id.toString()), HttpStatus.ACCEPTED);
     }
 

@@ -1,5 +1,7 @@
 package io.github.premsh.orgmanager.services;
 
+import io.github.premsh.orgmanager.constants.Permissions;
+import io.github.premsh.orgmanager.dto.AuthDto;
 import io.github.premsh.orgmanager.dto.payroll.CreatePayrollDto;
 import io.github.premsh.orgmanager.dto.payroll.PayrollDto;
 import io.github.premsh.orgmanager.dto.payroll.PayrollsDto;
@@ -29,7 +31,8 @@ public class PayrollServiceImpl implements PayrollService{
 
     @Override
     public ResponseEntity<PayrollDto> getPayrollById(Long orgId, Long id) {
-        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.PAYROLL_READ);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         return new ResponseEntity<>(
                 new PayrollDto(payrollRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Payroll not found"))), HttpStatus.OK
@@ -38,7 +41,8 @@ public class PayrollServiceImpl implements PayrollService{
 
     @Override
     public ResponseEntity<PayrollsDto> getAllPayrolls(Long orgId) {
-        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.PAYROLL_READ);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         return new ResponseEntity<>(
                 new PayrollsDto(payrollRepo.findAll(orgId)), HttpStatus.OK
@@ -47,12 +51,13 @@ public class PayrollServiceImpl implements PayrollService{
 
     @Override
     public ResponseEntity<CreatedDto> createPayroll(Long orgId, CreatePayrollDto dto) {
-        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.PAYROLL_CREATE);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         Payroll p = new Payroll();
         p.setOrganization(organizationRepo.findById(orgId).orElseThrow(()->new EntityNotFoundException("Organization not found")));
-        p.setCreatedBy(principalService.getUser());
-        p.setUpdatedBy(principalService.getUser());
+        p.setCreatedBy(auth.getUserId());
+        p.setUpdatedBy(auth.getUserId());
         p.setBasicPay(dto.getBasicPay());
         if(dto.getConveyanceAllowance() != null) p.setConveyanceAllowance(dto.getConveyanceAllowance());
         if(dto.getMedicalAllowance() != null) p.setMedicalAllowance(dto.getMedicalAllowance());
@@ -67,10 +72,11 @@ public class PayrollServiceImpl implements PayrollService{
 
     @Override
     public ResponseEntity<UpdatedDto> updatePayroll(Long orgId, UpdatePayrollDto dto, Long id) {
-        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.PAYROLL_UPDATE);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         Payroll p = payrollRepo.findById(orgId, id).orElseThrow(()-> new EntityNotFoundException("Payroll not found"));
-        p.setUpdatedBy(principalService.getUser());
+        p.setUpdatedBy(auth.getUserId());
         if(dto.getBasicPay() != null) p.setBasicPay(dto.getBasicPay());
         if(dto.getConveyanceAllowance() != null) p.setConveyanceAllowance(dto.getConveyanceAllowance());
         if(dto.getMedicalAllowance() != null) p.setMedicalAllowance(dto.getMedicalAllowance());
@@ -85,13 +91,11 @@ public class PayrollServiceImpl implements PayrollService{
 
     @Override
     public ResponseEntity<DeletedDto> deletePayroll(Long orgId, Long id) {
-        if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.PAYROLL_DELETE);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         Payroll p = payrollRepo.findById(orgId, id).orElseThrow(()-> new EntityNotFoundException("Payroll not found"));
-        p.setDeletedBy(principalService.getUser());
-        p.setDeletedAt(new Date());
-        p.setIsDeleted(true);
-        payrollRepo.save(p);
+        payrollRepo.delete(p);
         return new ResponseEntity<>(new DeletedDto("Payroll deleted successfully",String.valueOf(p.getId())), HttpStatus.ACCEPTED);
     }
 }

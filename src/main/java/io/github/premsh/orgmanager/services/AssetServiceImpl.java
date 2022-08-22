@@ -1,6 +1,8 @@
 package io.github.premsh.orgmanager.services;
 
+import io.github.premsh.orgmanager.constants.Permissions;
 import io.github.premsh.orgmanager.constants.RoleConstants;
+import io.github.premsh.orgmanager.dto.AuthDto;
 import io.github.premsh.orgmanager.dto.asset.AssetDto;
 import io.github.premsh.orgmanager.dto.asset.AssetsDto;
 import io.github.premsh.orgmanager.dto.asset.CreateAssetDto;
@@ -38,9 +40,8 @@ public class AssetServiceImpl implements AssetService{
     private TagRepo tagRepo;
     @Override
     public ResponseEntity<AssetDto> getAssetById(Long orgId, Long id) {
-        if (! principalService.hasAuthority(orgId, List.of(
-                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
-        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.ASSET_READ);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         return new ResponseEntity<>(
                 new AssetDto(assetsRepo.findById(orgId, id).orElseThrow(()-> new EntityNotFoundException("Asset not found"))),
@@ -50,9 +51,8 @@ public class AssetServiceImpl implements AssetService{
 
     @Override
     public ResponseEntity<AssetsDto> getAllAssets(Long orgId) {
-        if (! principalService.hasAuthority(orgId, List.of(
-                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
-        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.ASSET_READ);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         return new ResponseEntity<>(
                 new AssetsDto(assetsRepo.findAll(orgId)),
@@ -62,9 +62,8 @@ public class AssetServiceImpl implements AssetService{
 
     @Override
     public ResponseEntity<AssetsDto> filterAssets(Long orgId, String searchText) {
-        if (! principalService.hasAuthority(orgId, List.of(
-                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
-        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.ASSET_READ);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         return new ResponseEntity<>(
                 new AssetsDto(assetsRepo.filter(searchText)),
@@ -74,11 +73,9 @@ public class AssetServiceImpl implements AssetService{
 
     @Override
     public ResponseEntity<CreatedDto> createAsset(Long orgId, CreateAssetDto dto) {
-        if (! principalService.hasAuthority(orgId, List.of(
-                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
-        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.ASSET_CREATE);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
-        User usr = principalService.getUser();
         Organization org = organizationRepo.findById(orgId).orElseThrow(()->new EntityNotFoundException("Organization not found"));
         Asset a = new Asset();
         a.setName(dto.getName());
@@ -86,11 +83,11 @@ public class AssetServiceImpl implements AssetService{
         a.setCount(dto.getCount());
         a.setPurchaseCost(dto.getPurchaseCost());
         a.setCurrentValue(dto.getCurrentValue());
-        a.setCreatedBy(usr);
-        a.setUpdatedBy(usr);
+        a.setCreatedBy(auth.getUserId());
+        a.setUpdatedBy(auth.getUserId());
         if(dto.getTags() != null) {
             Set<Tag> tags = dto.getTags().stream().map(
-                    t -> tagService.facilitateTag(orgId, t, usr, org)
+                    t -> tagService.facilitateTag(orgId, t, auth.getUserId(), org)
             ).collect(Collectors.toSet());
             a.setTags(tags);
         }
@@ -101,11 +98,10 @@ public class AssetServiceImpl implements AssetService{
 
     @Override
     public ResponseEntity<UpdatedDto> updateAsset(Long orgId, UpdateAssetDto dto, Long id) {
-        if (! principalService.hasAuthority(orgId, List.of(
-                RoleConstants.ADMIN,RoleConstants.INVENTORY_MANAGER
-        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
-        User usr = principalService.getUser();
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.ASSET_UPDATE);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         Organization org = organizationRepo.findById(orgId).orElseThrow(()->new EntityNotFoundException("Organization not found"));
 
         if (!assetsRepo.existsById(orgId, id)) throw new EntityNotFoundException("Asset not found");
@@ -114,10 +110,10 @@ public class AssetServiceImpl implements AssetService{
         if(dto.getCount()!=null) a.setCount(dto.getCount());
         if(dto.getPurchaseCost()!=null) a.setPurchaseCost(dto.getPurchaseCost());
         if(dto.getCurrentValue()!=null) a.setCurrentValue(dto.getCurrentValue());
-        a.setUpdatedBy(principalService.getUser());
+        a.setUpdatedBy(principalService.getUser().getId());
         if(dto.getTags() != null) {
             Set<Tag> tags = dto.getTags().stream().map(
-                    t -> tagService.facilitateTag(orgId, t, usr, org)
+                    t -> tagService.facilitateTag(orgId, t, auth.getUserId(), org)
             ).collect(Collectors.toSet());
             a.setTags(tags);
         }
@@ -135,7 +131,7 @@ public class AssetServiceImpl implements AssetService{
         }
         if(dto.getAddTags() != null) {
             Set<Tag> tags = dto.getAddTags().stream().map(
-                    t -> tagService.facilitateTag(orgId, t, usr, org)
+                    t -> tagService.facilitateTag(orgId, t, auth.getUserId(), org)
             ).collect(Collectors.toSet());
             tags.addAll(a.getTags());
             a.setTags(tags);
@@ -146,16 +142,13 @@ public class AssetServiceImpl implements AssetService{
 
     @Override
     public ResponseEntity<DeletedDto> deleteAsset(Long orgId, Long id) {
-        if (! principalService.hasAuthority(orgId, List.of(
-                RoleConstants.ADMIN
-        ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        AuthDto auth = principalService.checkAuthority(orgId, Permissions.ASSET_DELETE);
+        if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
-        if (!assetsRepo.existsById(orgId, id)) throw new EntityNotFoundException("Asset not found");
         Asset a = assetsRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Asset not found"));
-        a.setIsDeleted(true);
-        a.setDeletedBy(principalService.getUser());
-        a.setDeletedAt(new Date());
-        assetsRepo.save(a);
-        return new ResponseEntity<>(new DeletedDto("Asset Deleted successfully",String.valueOf(a.getId())), HttpStatus.CREATED);
+
+        a.removeAllTags();
+        assetsRepo.delete(a);
+        return new ResponseEntity<>(new DeletedDto("Asset Deleted successfully",String.valueOf(id)), HttpStatus.CREATED);
     }
 }

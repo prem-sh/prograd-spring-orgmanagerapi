@@ -17,4 +17,8 @@ public class CreatedDto extends SuccessResponse{
     public CreatedDto(String message, String entityId, String info) {
         super(HttpStatus.CREATED, message, entityId, info);
     }
+
+    public CreatedDto(HttpStatus status, String message) {
+        super(status, message);
+    }
 }

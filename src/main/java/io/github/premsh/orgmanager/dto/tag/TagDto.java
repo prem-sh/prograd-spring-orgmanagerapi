@@ -24,7 +24,7 @@ public class TagDto {
 
     public TagDto(Tag tag) {
         this.tagId = tag.getId();
-        this.tagname = tag.getTag();
+        this.tagname = tag.getTagName();
         this.deleted = tag.getIsDeleted();
         this.organization = new OrganizationCompactDto(tag.getOrganization());
         this.metadata = new Metadata(
