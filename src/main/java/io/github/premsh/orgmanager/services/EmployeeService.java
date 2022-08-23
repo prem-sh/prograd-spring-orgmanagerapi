@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 public interface EmployeeService {
     ResponseEntity<EmployeeDto> getEmployeeById(Long orgId, Long id);
     ResponseEntity<EmployeesDto> getAllEmployees(Long orgId);
+    ResponseEntity<EmployeesDto> getEmployeesByDesignation(Long orgId, String des);
+    ResponseEntity<EmployeesDto> getEmployeesByDepartment(Long orgId, String dep);
+    ResponseEntity<EmployeesDto> getEmployeesByDesignationDepartment(Long id, String designationName, String departmentName);
     ResponseEntity<EmployeesDto> filterEmployees(Long orgId, String searchText,Boolean firstname,Boolean lastname,Boolean email,Boolean address,Boolean phone);
     ResponseEntity<CreatedDto> createEmployee(Long orgId, CreateEmployeeDto dto);
     ResponseEntity<UpdatedDto> updateEmployee(Long orgId, UpdateEmployeeDto dto, Long id);

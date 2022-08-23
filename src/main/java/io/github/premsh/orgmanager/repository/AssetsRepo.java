@@ -23,10 +23,16 @@ public interface AssetsRepo extends JpaRepository<Asset, Long> {
     boolean existsById(long id, long id1);
 
     @Query("select a from Asset a where upper(a.name) like upper(concat('%', ?1,'%'))")
-    List<Asset> filter(String name);
+    List<Asset> filter(long orgId, String name);
 
     @Query("select a from Asset a inner join a.tags tags where a.organization.id = ?1 and tags.id = ?2")
     Set<Asset> findAllByTag(long orgId, long tagId);
+
+    @Query("""
+            select a from Asset a inner join a.tags tags
+            where a.organization.id = ?1 and upper(tags.tagName) like upper(concat('%', ?2,'%')) and a.isDeleted = false""")
+    Set<Asset> findAllByTagName(long id, String tagName);
+
 
     
 }

@@ -37,7 +37,6 @@ public class PrincipalServiceImpl implements PrincipalService{
     public Boolean isMemberOfOrg(Long orgId){
         User usr = getUser();
         Long userId = usr.getId();
-        System.out.println(userId);
         if (userId == null) return false;
 
         if (usr.getRoles().contains(RoleConstants.SUPERADMIN) || usr.getRoles().contains(RoleConstants.SUPPORT)){

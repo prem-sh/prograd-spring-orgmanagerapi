@@ -35,6 +35,10 @@ public class AssetController {
     public ResponseEntity<AssetsDto> filterAssets(@PathVariable Long orgId, @PathVariable String searchText) {
         return assetService.filterAssets(orgId, searchText);
     }
+    @GetMapping("/tagfilter")
+    public ResponseEntity<AssetsDto> filterAssets(@PathVariable Long orgId, @RequestParam String[] tags) {
+        return assetService.searchByTags(orgId, tags);
+    }
 
     @PostMapping
     public ResponseEntity<CreatedDto> createAsset(@PathVariable Long orgId, @Valid @RequestBody CreateAssetDto dto) {

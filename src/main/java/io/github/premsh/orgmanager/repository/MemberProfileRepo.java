@@ -45,26 +45,26 @@ public interface MemberProfileRepo extends JpaRepository<MemberProfile, Long> {
 
     @Query("""
             select m from MemberProfile m
-            where m.organization.id = ?1 and upper(m.user.firstName) like upper(concat('%', ?2,'%')) and m.isDeleted = false""")
-    List<MemberProfile> filterFirstname(long id, String firstName);
+            where m.organization.id = ?1 and m.role.roleName like ?2 and upper(m.user.firstName) like upper(concat('%', ?3,'%')) and m.isDeleted = false""")
+    List<MemberProfile> filterEmployeeFirstname(long id, String roleName, String firstName);
 
     @Query("""
             select m from MemberProfile m
-            where m.organization.id = ?1 and upper(m.user.lastName) like upper(concat('%', ?2,'%')) and m.isDeleted = false""")
-    List<MemberProfile> filterLastname(long id, String lastName);
+            where m.organization.id = ?1 and m.role.roleName like ?2 and upper(m.user.lastName) like upper(concat('%', ?3,'%')) and m.isDeleted = false""")
+    List<MemberProfile> filterEmployeeLastname(long id, String roleName, String lastName);
 
     @Query("""
             select m from MemberProfile m
-            where m.organization.id = ?1 and upper(m.user.phone) like upper(concat('%', ?2,'%')) and m.isDeleted = false""")
-    List<MemberProfile> filterPhone(long id, String phone);
+            where m.organization.id = ?1 and m.role.roleName like ?2 and upper(m.user.phone) like upper(concat('%', ?3,'%')) and m.isDeleted = false""")
+    List<MemberProfile> filterEmployeePhone(long id, String roleName, String phone);
 
     @Query("""
             select m from MemberProfile m
-            where m.organization.id = ?1 and upper(m.user.address) like upper(concat('%', ?2,'%')) and m.isDeleted = false""")
-    List<MemberProfile> filterAddress(long id, String address);
+            where m.organization.id = ?1 and m.role.roleName like ?2 and upper(m.user.address) like upper(concat('%', ?3,'%')) and m.isDeleted = false""")
+    List<MemberProfile> filterEmployeeAddress(long id, String roleName, String address);
 
-    @Query("select m from MemberProfile m where m.organization.id = ?1 and upper(m.user.email) like upper(concat('%', ?2,'%')) and m.isDeleted = false")
-    List<MemberProfile> filterEmail(long id, String email);
+    @Query("select m from MemberProfile m where m.organization.id = ?1 and m.role.roleName like ?2 and upper(m.user.email) like upper(concat('%', ?3,'%')) and m.isDeleted = false")
+    List<MemberProfile> filterEmployeeEmail(long id, String roleName, String email);
 
     @Query("""
             select m from MemberProfile m
@@ -86,6 +86,21 @@ public interface MemberProfileRepo extends JpaRepository<MemberProfile, Long> {
     @Modifying
     @Query("delete from MemberProfile m where m.id = ?1")
     void deleteById(Long id);
+
+    @Query("""
+            select m from MemberProfile m
+            where m.organization.id = ?1 and m.role.roleName = ?2 and  upper(m.designation.designationName) like upper(concat('%', ?3,'%')) and m.isDeleted = false""")
+    List<MemberProfile> findByOrgIdRoleNameDesignation(long id, String roleName, String designationName);
+
+    @Query("""
+            select m from MemberProfile m
+            where m.organization.id = ?1 and m.role.roleName like ?2 and upper(m.department.departmentName) like upper(concat('%', ?3,'%')) and m.isDeleted = false""")
+    List<MemberProfile> findByOrgIdRoleNameDepartment(long id, String roleName, String departmentName);
+
+    @Query("""
+            select m from MemberProfile m
+            where m.organization.id = ?1 and m.role.roleName like ?2 and upper(m.designation.designationName) like upper(concat('%', ?3,'%')) and upper(m.department.departmentName) like upper(concat('%', ?4,'%')) and m.isDeleted = false""")
+    List<MemberProfile> getEmployeesByDesignationDepartment(long id, String roleName, String designationName, String departmentName);
 
 
 }

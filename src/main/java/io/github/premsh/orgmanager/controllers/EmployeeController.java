@@ -52,5 +52,12 @@ public class EmployeeController {
     public ResponseEntity<DeletedDto> deleteEmployee(@PathVariable Long orgId,@PathVariable Long id) {
         return employeeService.deleteEmployee(orgId, id);
     }
+    @GetMapping("/filter-by-position")
+    public ResponseEntity<EmployeesDto> getEmployeesByDesignation(@PathVariable Long orgId, @RequestParam(name = "designation",required = false) String des, @RequestParam(name = "department",required = false) String dep){
+        if(des !=null && dep==null) return employeeService.getEmployeesByDesignation(orgId, des);
+        else if(des == null && dep!=null) return employeeService.getEmployeesByDepartment(orgId, dep);
+        else return employeeService.getEmployeesByDesignationDepartment(orgId, des, dep);
+    }
+
 
 }

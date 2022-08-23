@@ -69,15 +69,36 @@ public class EmployeeServiceImpl implements EmployeeService{
     }
 
     @Override
+    public ResponseEntity<EmployeesDto> getEmployeesByDesignation(Long orgId, String des) {
+        return new ResponseEntity<>(
+                new EmployeesDto(memberProfileRepo.findByOrgIdRoleNameDesignation(orgId, RoleConstants.EMPLOYEE, des)), HttpStatus.OK
+        );
+    }
+
+    @Override
+    public ResponseEntity<EmployeesDto> getEmployeesByDepartment(Long orgId, String dep) {
+        return new ResponseEntity<>(
+                new EmployeesDto(memberProfileRepo.findByOrgIdRoleNameDepartment(orgId, RoleConstants.EMPLOYEE, dep)), HttpStatus.OK
+        );
+    }
+
+    @Override
+    public ResponseEntity<EmployeesDto> getEmployeesByDesignationDepartment(Long orgId, String designationName, String departmentName) {
+        return new ResponseEntity<>(
+                new EmployeesDto(memberProfileRepo.getEmployeesByDesignationDepartment(orgId, RoleConstants.EMPLOYEE, designationName, departmentName)), HttpStatus.OK
+        );
+    }
+
+    @Override
     public ResponseEntity<EmployeesDto> filterEmployees(Long orgId, String searchText, Boolean firstname, Boolean lastname, Boolean email, Boolean address, Boolean phone) {
         if (! principalService.isMemberOfOrg(orgId)) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         List<MemberProfile> filtrate = new ArrayList<>();
-        if(firstname) filtrate.addAll(memberProfileRepo.filterFirstname(orgId,searchText));
-        if(lastname) filtrate.addAll(memberProfileRepo.filterLastname(orgId,searchText));
-        if(email) filtrate.addAll(memberProfileRepo.filterEmail(orgId,searchText));
-        if(address) filtrate.addAll(memberProfileRepo.filterAddress(orgId,searchText));
-        if(phone) filtrate.addAll(memberProfileRepo.filterPhone(orgId,searchText));
+        if(firstname) filtrate.addAll(memberProfileRepo.filterEmployeeFirstname(orgId,RoleConstants.EMPLOYEE,searchText));
+        if(lastname) filtrate.addAll(memberProfileRepo.filterEmployeeLastname(orgId,RoleConstants.EMPLOYEE,searchText));
+        if(email) filtrate.addAll(memberProfileRepo.filterEmployeeEmail(orgId,RoleConstants.EMPLOYEE,searchText));
+        if(address) filtrate.addAll(memberProfileRepo.filterEmployeeAddress(orgId,RoleConstants.EMPLOYEE,searchText));
+        if(phone) filtrate.addAll(memberProfileRepo.filterEmployeePhone(orgId,RoleConstants.EMPLOYEE,searchText));
 
         return new ResponseEntity<>(
                 new EmployeesDto(filtrate), HttpStatus.OK
@@ -98,12 +119,13 @@ public class EmployeeServiceImpl implements EmployeeService{
             if(userRepo.existsByEmail(newUser.getEmail())){
                 return new ResponseEntity<>(new CreatedDto("User email already taken"), HttpStatus.NOT_ACCEPTABLE);
             }
-            if(userRepo.existsByEmail(newUser.getPhone())){
+            if(userRepo.existsByPhone(newUser.getPhone())){
                 return new ResponseEntity<>(new CreatedDto("User phone number already taken"), HttpStatus.NOT_ACCEPTABLE);
             }
             newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
             newUser.setCreatedBy(actionBy);
             newUser.setUpdatedBy(actionBy);
+
             newUser = userRepo.save(newUser);
         }
 
@@ -163,18 +185,6 @@ public class EmployeeServiceImpl implements EmployeeService{
 
         return new ResponseEntity<>(new UpdatedDto("Employee updated successfully",String.valueOf(member.getId())), HttpStatus.ACCEPTED);
     }
-
-//    @Override
-//    public ResponseEntity<DeletedDto> deleteEmployee(Long orgId, Long id) {
-//
-//        MemberProfile member = memberProfileRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
-//        member.setDeletedBy(principalService.getUser());
-//        member.setDeletedAt(new Date());
-//        member.setIsDeleted(true);
-//        memberProfileRepo.save(member);
-//
-//        return new ResponseEntity<>(new DeletedDto("Employee deleted successfully",String.valueOf(member.getId())), HttpStatus.ACCEPTED);
-//    }
 
     @Override
     public ResponseEntity<DeletedDto> deleteEmployee(Long orgId, Long id) {

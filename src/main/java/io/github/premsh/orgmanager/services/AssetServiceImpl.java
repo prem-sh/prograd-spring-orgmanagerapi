@@ -61,12 +61,23 @@ public class AssetServiceImpl implements AssetService{
     }
 
     @Override
+    public ResponseEntity<AssetsDto> searchByTags(Long orgId, String[] tags) {
+        Set<Asset> assets = new HashSet<>();
+        for (String t: tags) {
+            assets.addAll(assetsRepo.findAllByTagName(orgId, t));
+        }
+        return new ResponseEntity<>(
+                new AssetsDto(assets.stream().toList()), HttpStatus.OK
+        );
+    }
+
+    @Override
     public ResponseEntity<AssetsDto> filterAssets(Long orgId, String searchText) {
         AuthDto auth = principalService.checkAuthority(orgId, Permissions.ASSET_READ);
         if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         return new ResponseEntity<>(
-                new AssetsDto(assetsRepo.filter(searchText)),
+                new AssetsDto(assetsRepo.filter(orgId,searchText)),
                 HttpStatus.OK
         );
     }
