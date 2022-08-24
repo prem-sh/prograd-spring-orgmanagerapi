@@ -2,6 +2,7 @@ package io.github.premsh.orgmanager.services;
 
 import io.github.premsh.orgmanager.constants.Defaults;
 import io.github.premsh.orgmanager.constants.Permissions;
+import io.github.premsh.orgmanager.constants.RoleConstants;
 import io.github.premsh.orgmanager.dto.AuthDto;
 import io.github.premsh.orgmanager.dto.memberprofile.CreateMemberProfileDto;
 import io.github.premsh.orgmanager.dto.memberprofile.MemberProfileDto;
@@ -10,6 +11,7 @@ import io.github.premsh.orgmanager.dto.memberprofile.UpdateMemberProfileDto;
 import io.github.premsh.orgmanager.dto.response.CreatedDto;
 import io.github.premsh.orgmanager.dto.response.DeletedDto;
 import io.github.premsh.orgmanager.dto.response.UpdatedDto;
+import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityAlreadyExistException;
 import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityNotFoundException;
 import io.github.premsh.orgmanager.models.MemberProfile;
 import io.github.premsh.orgmanager.repository.*;
@@ -63,6 +65,13 @@ public class MemberProfileServiceImpl implements MemberProfileService{
         AuthDto auth = principalService.checkAuthority(orgId, Permissions.MEMBER_CREATE);
         if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
+        if(memberProfileRepo.existByEmail(orgId, dto.getEmail())){
+            throw new EntityAlreadyExistException("The user is already a member of the organization");
+        }
+
+        if((dto.getRole().equals(RoleConstants.SUPERADMIN) || dto.getRole().equals(RoleConstants.SUPPORT) && !auth.getRole().equals(RoleConstants.SUPERADMIN))){
+            throw new EntityNotFoundException("Role does not Exist");
+        }
 
         MemberProfile member = new MemberProfile();
         member.setCreatedBy(auth.getUserId());

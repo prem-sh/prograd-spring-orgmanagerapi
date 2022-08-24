@@ -8,6 +8,7 @@ import io.github.premsh.orgmanager.dto.employee.UpdateEmployeeDto;
 import io.github.premsh.orgmanager.dto.response.CreatedDto;
 import io.github.premsh.orgmanager.dto.response.DeletedDto;
 import io.github.premsh.orgmanager.dto.response.UpdatedDto;
+import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityAlreadyExistException;
 import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityNotFoundException;
 import io.github.premsh.orgmanager.models.Designation;
 import io.github.premsh.orgmanager.models.MemberProfile;
@@ -112,6 +113,9 @@ public class EmployeeServiceImpl implements EmployeeService{
         Long actionBy = principalService.getUser().getId();
 
         User newUser = dto.getUser();
+        if(memberProfileRepo.existByEmail(orgId, dto.getEmail())){
+            throw new EntityAlreadyExistException("The user is already a member of the organization");
+        }
         Optional<User> optionalUser = userRepo.findByEmail(newUser.getEmail());
         if(optionalUser.isPresent()){
             newUser = optionalUser.get();

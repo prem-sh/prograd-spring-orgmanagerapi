@@ -102,5 +102,10 @@ public interface MemberProfileRepo extends JpaRepository<MemberProfile, Long> {
             where m.organization.id = ?1 and m.role.roleName like ?2 and upper(m.designation.designationName) like upper(concat('%', ?3,'%')) and upper(m.department.departmentName) like upper(concat('%', ?4,'%')) and m.isDeleted = false""")
     List<MemberProfile> getEmployeesByDesignationDepartment(long id, String roleName, String designationName, String departmentName);
 
+    @Query("""
+            select (count(m) > 0) from MemberProfile m
+            where m.organization.id = ?1 and upper(m.user.email) like upper(?2)""")
+    boolean existByEmail(long id, String email);
+
 
 }
