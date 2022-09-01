@@ -22,14 +22,14 @@ public abstract class ErrorResponse {
         timestamp = new Date();
         this.status = status;
         this.message = "Unexpected error occured";
-        this.additionalInfo = exc.getLocalizedMessage();
+        this.additionalInfo = exc.getMessage();
         this.error = exc.getClass().toString();
     }
     public ErrorResponse(HttpStatus status, String message, Throwable exc){
         timestamp = new Date();
         this.status = status;
         this.message = message;
-        this.additionalInfo = exc.getLocalizedMessage();
+        this.additionalInfo = exc.getMessage();
         this.error = exc.getClass().getSimpleName();
     }
 }

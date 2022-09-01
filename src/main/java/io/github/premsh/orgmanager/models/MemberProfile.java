@@ -1,6 +1,8 @@
 package io.github.premsh.orgmanager.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 
@@ -64,6 +66,7 @@ public class MemberProfile {
         }
     }
 
+    @JsonIgnoreProperties(value = {"memberProfile"})
     @OneToOne
     @JoinColumn(name = "salary_profile", referencedColumnName = "id")
     private Payroll payroll;

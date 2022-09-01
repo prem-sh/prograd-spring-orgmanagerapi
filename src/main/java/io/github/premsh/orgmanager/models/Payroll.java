@@ -1,6 +1,7 @@
 package io.github.premsh.orgmanager.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 
@@ -22,13 +23,13 @@ public class Payroll {
     @ManyToOne
     private Organization organization;
 
-    @OneToOne(mappedBy = "payroll")
-    private MemberProfile memberProfile;
-
-    @PreRemove
-    private void preRemove() {
-        if(memberProfile!=null) memberProfile.setPayroll(null);
-    }
+//    @OneToOne(mappedBy = "payroll")
+//    private MemberProfile memberProfile;
+//
+//    @PreRemove
+//    private void preRemove() {
+//        if(memberProfile!=null) memberProfile.setPayroll(null);
+//    }
 
     @NotNull
     private Double basicPay = 0D;

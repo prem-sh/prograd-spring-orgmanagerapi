@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService{
         User subjectUser = userRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("User with id %d does not exist", id)));
         userDto.get(subjectUser); //get updates from dto
 
-        subjectUser.setPassword(passwordEncoder.encode(subjectUser.getPassword()));
+        if(subjectUser.getPassword() != null) subjectUser.setPassword(passwordEncoder.encode(subjectUser.getPassword()));
         subjectUser.setUpdatedBy(actionBy);
         userRepo.save(subjectUser);
         return new ResponseEntity<>(new UpdatedDto("User updated successfully", id.toString()), HttpStatus.ACCEPTED);

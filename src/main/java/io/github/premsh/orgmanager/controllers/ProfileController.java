@@ -50,11 +50,7 @@ public class ProfileController {
     @DeleteMapping()
     public ResponseEntity<DeletedDto> delete() {
         User subjectUser = userRepo.findById(principalService.getUser().getId()).orElseThrow(()->new EntityNotFoundException("User with id %d does not exist"));
-        subjectUser.setIsDeleted(true);
-        subjectUser.setDeletedBy(subjectUser.getId());
-        subjectUser.setDeletedAt(new Date());
-        userRepo.save(subjectUser);
+        userRepo.delete(subjectUser);
         return new ResponseEntity<>(new DeletedDto("Your profile deleted successfully"), HttpStatus.ACCEPTED);
     }
-
 }
