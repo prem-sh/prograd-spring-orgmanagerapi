@@ -10,7 +10,9 @@ import io.github.premsh.orgmanager.dto.response.CreatedDto;
 import io.github.premsh.orgmanager.dto.response.DeletedDto;
 import io.github.premsh.orgmanager.dto.response.UpdatedDto;
 import io.github.premsh.orgmanager.execeptionhandler.exceptions.EntityNotFoundException;
+import io.github.premsh.orgmanager.models.MemberProfile;
 import io.github.premsh.orgmanager.models.Payroll;
+import io.github.premsh.orgmanager.repository.MemberProfileRepo;
 import io.github.premsh.orgmanager.repository.OrganizationRepo;
 import io.github.premsh.orgmanager.repository.PayrollRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class PayrollServiceImpl implements PayrollService{
@@ -26,6 +29,8 @@ public class PayrollServiceImpl implements PayrollService{
     PayrollRepo payrollRepo;
     @Autowired
     private OrganizationRepo organizationRepo;
+    @Autowired
+    private MemberProfileRepo memberProfileRepo;
     @Autowired
     private PrincipalService principalService;
 
@@ -95,6 +100,13 @@ public class PayrollServiceImpl implements PayrollService{
         if (!auth.isAuthority()) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         Payroll p = payrollRepo.findById(orgId, id).orElseThrow(()-> new EntityNotFoundException("Payroll not found"));
+        List<MemberProfile> profiles = memberProfileRepo.findMembersByPayrollId(orgId,p.getId());
+        profiles.forEach(
+                prof-> {
+                    prof.setPayroll(null);
+                    memberProfileRepo.save(prof);
+                }
+        );
         payrollRepo.delete(p);
         return new ResponseEntity<>(new DeletedDto("Payroll deleted successfully",String.valueOf(p.getId())), HttpStatus.ACCEPTED);
     }

@@ -121,7 +121,7 @@ public class OrganizationServiceImpl implements OrganizationService{
                 RoleConstants.ADMIN
         ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
-        Organization subjectOrg = (memberProfileRepo.findByOrgIdUserIdRoleId(orgId, usr.getId(), RoleConstants.ADMIN).orElseThrow(()->new EntityNotFoundException(String.format("Organization with Id : %d not found", orgId)))).getOrganization();
+        Organization subjectOrg = organizationRepo.findById(orgId).orElseThrow(()->new EntityNotFoundException(String.format("Organization with Id : %d not found", orgId)));
         orgDto.getUpdates(subjectOrg);
         subjectOrg.setUpdatedBy(usr.getId());
         organizationRepo.save(subjectOrg);
@@ -141,7 +141,7 @@ public class OrganizationServiceImpl implements OrganizationService{
                 RoleConstants.ADMIN
         ))) return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
-        Organization subjectOrg = organizationRepo.findByI(id).orElseThrow(()->new EntityNotFoundException(String.format("Organization with Id : %d not found", id)));
+        Organization subjectOrg = organizationRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("Organization with Id : %d not found", id)));
         organizationRepo.delete(subjectOrg);
 
         return new ResponseEntity<>(

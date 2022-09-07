@@ -181,7 +181,7 @@ public class EmployeeServiceImpl implements EmployeeService{
         if (dto.getIfsc()!=null) member.setIfsc(dto.getIfsc());
         memberProfileRepo.save(member);
 
-        User subjectUser = userRepo.findById(id).orElseThrow(()->new EntityNotFoundException(String.format("User with id %d does not exist", id)));
+        User subjectUser =  member.getUser();
         dto.getUser(subjectUser); //get updates from dto
         subjectUser.setPassword(passwordEncoder.encode(subjectUser.getPassword()));
         subjectUser.setUpdatedBy(actionBy);
@@ -196,10 +196,7 @@ public class EmployeeServiceImpl implements EmployeeService{
         Long actionBy = principalService.getUser().getId();
 
         MemberProfile member = memberProfileRepo.findById(orgId, id).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
-        member.setDeletedBy(actionBy);
-        member.setDeletedAt(new Date());
-        member.setIsDeleted(true);
-        memberProfileRepo.save(member);
+        memberProfileRepo.deleteById(id);
 
         return new ResponseEntity<>(new DeletedDto("Employee deleted successfully",String.valueOf(member.getId())), HttpStatus.ACCEPTED);
     }

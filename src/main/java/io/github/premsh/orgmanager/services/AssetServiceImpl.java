@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,9 +64,24 @@ public class AssetServiceImpl implements AssetService{
     @Override
     public ResponseEntity<AssetsDto> searchByTags(Long orgId, String[] tags) {
         Set<Asset> assets = new HashSet<>();
-        for (String t: tags) {
-            assets.addAll(assetsRepo.findAllByTagName(orgId, t));
-        }
+        List<String> tagSet =  Arrays.stream(tags).map(String::toUpperCase).collect(Collectors.toList());
+        assets = assetsRepo.findAllByTags(orgId, tagSet);
+        assets = assets.stream().filter(
+                asset -> {
+                    for (String t: tags) {
+                        boolean contains = false;
+                        for (Tag tag: asset.getTags()) {
+                            if(tag.getTagName().equalsIgnoreCase(t)) {
+                                contains=true;
+                                break;
+                            }
+                        }
+                        if(!contains) return false;
+                    }
+                    return true;
+                }
+        ).collect(Collectors.toSet());
+
         return new ResponseEntity<>(
                 new AssetsDto(assets.stream().toList()), HttpStatus.OK
         );
