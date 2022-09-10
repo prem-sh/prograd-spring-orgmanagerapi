@@ -119,7 +119,6 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        System.out.println("INSIDE");
         List<GrantedAuthority> authorities = memberProfile.stream().map((mem) -> new SimpleGrantedAuthority(mem.getRole().getRoleName())).collect(Collectors.toList());
         System.out.println(Arrays.toString(authorities.toArray()));
         return authorities;

@@ -8,11 +8,11 @@ import javax.annotation.PostConstruct;
 
 @Configuration
 public class DispatcherServeletConfig {
-//    @Autowired
-//    DispatcherServlet dispatcherServlet;
-//
-//    @PostConstruct
-//    private void configureDispatcherServelet(){
-//        dispatcherServlet.setThrowExceptionIfNoHandlerFound(true);
-//    }
+    @Autowired
+    DispatcherServlet dispatcherServlet;
+
+    @PostConstruct
+    private void configureDispatcherServelet(){
+        dispatcherServlet.setThrowExceptionIfNoHandlerFound(true);
+    }
 }

@@ -69,8 +69,8 @@ public class MemberProfileServiceImpl implements MemberProfileService{
             throw new EntityAlreadyExistException("The user is already a member of the organization");
         }
 
-        if((dto.getRole().equals(RoleConstants.SUPERADMIN) || dto.getRole().equals(RoleConstants.SUPPORT) && !auth.getRole().equals(RoleConstants.SUPERADMIN))){
-            throw new EntityNotFoundException("Role does not Exist");
+        if((dto.getRole().equalsIgnoreCase(RoleConstants.SUPERADMIN) || dto.getRole().equalsIgnoreCase(RoleConstants.SUPPORT) )){
+            if(!auth.getRole().equalsIgnoreCase(RoleConstants.SUPERADMIN)) throw new EntityNotFoundException("Role does not Exist");
         }
 
         MemberProfile member = new MemberProfile();
@@ -101,7 +101,7 @@ public class MemberProfileServiceImpl implements MemberProfileService{
         if (dto.getBankAccountNumber()!=null) member.setBankAccountNumber(dto.getBankAccountNumber());
         if (dto.getIfsc()!=null) member.setIfsc(dto.getIfsc());
         MemberProfile newMem =  memberProfileRepo.save(member);
-        return new ResponseEntity<>(new CreatedDto("Nwe Member added successfully",String.valueOf(newMem.getId())), HttpStatus.CREATED);
+        return new ResponseEntity<>(new CreatedDto("New Member added successfully",String.valueOf(newMem.getId())), HttpStatus.CREATED);
     }
 
     @Override
@@ -112,7 +112,12 @@ public class MemberProfileServiceImpl implements MemberProfileService{
 
         MemberProfile member = memberProfileRepo.findById(orgId, memId).orElseThrow(()->new EntityNotFoundException("Membership id does not exist"));
         member.setUpdatedBy(auth.getUserId());
-        if (dto.getRole()!=null)member.setRole(roleRepo.findByRoleName(dto.getRole()).orElseThrow(()->new EntityNotFoundException("Role does not exist")));
+        if (dto.getRole()!=null) {
+            if((dto.getRole().equalsIgnoreCase(RoleConstants.SUPERADMIN) || dto.getRole().equalsIgnoreCase(RoleConstants.SUPPORT) )){
+                if(!auth.getRole().equalsIgnoreCase(RoleConstants.SUPERADMIN)) throw new EntityNotFoundException("Role does not Exist");
+            }
+            member.setRole(roleRepo.findByRoleName(dto.getRole()).orElseThrow(() -> new EntityNotFoundException("Role does not exist")));
+        }
         if (dto.getDesignation()!=null) member.setDesignation(designationRepo.findByName(orgId, dto.getDesignation()).orElseThrow(
                 ()->new EntityNotFoundException("Designation not found")
         ));

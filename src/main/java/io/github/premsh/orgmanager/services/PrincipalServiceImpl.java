@@ -70,7 +70,7 @@ public class PrincipalServiceImpl implements PrincipalService{
 
         Optional<MemberProfile> op = memberProfileRepo.findByOrgIdUserId(orgId, getUser().getId());
 
-        if (usr.getRoles().contains(RoleConstants.SUPERADMIN)){
+        if (usr.getRoles().contains(RoleConstants.SUPPORT)){
             hasPermission = true;
             role = RoleConstants.SUPPORT;
         }
